@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useLoveLanguages } from '@/contexts/LoveLanguagesContext'
 import { LoveLanguageCard } from '@/components/love-languages/LoveLanguageCard'
 import { AddLanguageDialog } from '@/components/love-languages/AddLanguageDialog'
@@ -90,6 +91,8 @@ interface PartnerLanguagesTabProps {
 }
 
 function PartnerLanguagesTab({ partnerLanguages }: PartnerLanguagesTabProps): React.ReactNode {
+  const router = useRouter()
+
   if (partnerLanguages.length === 0) {
     return (
       <Card className="bg-white">
@@ -111,7 +114,7 @@ function PartnerLanguagesTab({ partnerLanguages }: PartnerLanguagesTabProps): Re
           language={language}
           isOwn={false}
           onCreateAction={() => {
-            window.location.href = `/love-languages/actions?languageId=${language.id}`
+            router.push(`/love-languages/actions?languageId=${language.id}`)
           }}
         />
       ))}

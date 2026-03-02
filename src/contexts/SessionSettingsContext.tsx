@@ -133,7 +133,7 @@ interface SessionSettingsProviderProps {
 export function SessionSettingsProvider({ children, coupleId }: SessionSettingsProviderProps): React.ReactNode {
   const [currentSettings, setCurrentSettings] = useState<SessionSettings | null>(null)
   const [pendingProposal, setPendingProposal] = useState<SessionSettingsProposal | null>(null)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     async function loadSettings() {
@@ -174,29 +174,28 @@ export function SessionSettingsProvider({ children, coupleId }: SessionSettingsP
       }
     }
 
-    loadSettings()
-    loadPendingProposal()
+    void Promise.all([loadSettings(), loadPendingProposal()])
   }, [coupleId, supabase])
 
   // Realtime subscription for proposals
   useRealtimeCouple<DbSessionSettingsProposal>({
     table: 'session_settings_proposals',
     coupleId,
-    onInsert: (record) => {
+    onInsert: useCallback((record: DbSessionSettingsProposal) => {
       const proposal = mapDbToProposal(record)
       if (proposal.status === 'pending') {
         setPendingProposal(proposal)
       }
-    },
-    onUpdate: (record) => {
+    }, []),
+    onUpdate: useCallback((record: DbSessionSettingsProposal) => {
       const proposal = mapDbToProposal(record)
       if (proposal.status !== 'pending') {
         setPendingProposal(null)
       }
-    },
-    onDelete: () => {
+    }, []),
+    onDelete: useCallback(() => {
       setPendingProposal(null)
-    },
+    }, []),
   })
 
   const proposeSettings = useCallback(

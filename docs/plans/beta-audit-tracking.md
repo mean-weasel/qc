@@ -138,6 +138,32 @@ Holistic beta-readiness audit across feature completeness, error handling, UX po
 - [ ] Bulk delete undo/soft-delete for notes (dimension: error-handling, severity: MEDIUM)
 - [ ] Missing required field visual indicators on forms (dimension: polish, severity: MEDIUM)
 - [ ] Inconsistent form styling — raw select vs Radix Select (dimension: polish, severity: MEDIUM)
-- [ ] LoveLanguagesContext missing useCallback on realtime handlers (dimension: performance, severity: MEDIUM)
-- [ ] SessionSettingsContext sequential loads could be parallelized (dimension: performance, severity: MEDIUM)
+- [x] ~~LoveLanguagesContext missing useCallback on realtime handlers~~ Already has useCallback — false finding (dimension: performance, severity: N/A)
+- [x] SessionSettingsContext sequential loads could be parallelized (dimension: performance, severity: MEDIUM) — fixed in iteration 4
+- [ ] Cookie consent banner for GDPR (dimension: feature, severity: LOW)
+
+### Iteration 4 (2026-03-02)
+
+**Findings:** Targeted deferred MEDIUM items from iteration 3 + new scan
+**Code fixes applied:** 3
+**Manual to-dos added:** 0
+**Deferred:** 10
+
+#### Fixed (Code)
+
+- [x] Memoize Supabase client + parallelize settings/proposal loads + wrap realtime handlers in useCallback in SessionSettingsContext (dimension: performance, severity: MEDIUM)
+- [x] Wrap realtime handlers in useCallback in CheckInContext to prevent re-subscriptions (dimension: performance, severity: MEDIUM)
+- [x] Replace window.location.href with router.push in love-languages PartnerLanguagesTab (dimension: performance, severity: MEDIUM)
+
+#### Deferred
+
+- [ ] Offline/network failure detection (dimension: error-handling, severity: HIGH, requires architectural decision)
+- [ ] Context provider route-based splitting (dimension: performance, severity: HIGH, requires architectural redesign)
+- [ ] Dashboard N+1 queries — consolidate into DB view/RPC (dimension: performance, severity: HIGH, needs migration)
+- [ ] Email re-subscription UI (dimension: feature, severity: HIGH, feature work)
+- [ ] Quiet hours enforcement in cron job (dimension: feature, severity: HIGH, needs product decision)
+- [ ] In-memory rate limiter not persistent across instances (dimension: ops, severity: HIGH, needs Redis)
+- [ ] Add Suspense boundaries for streaming (dimension: performance, severity: MEDIUM)
+- [ ] Add aria-live regions for dynamic content updates (dimension: polish, severity: MEDIUM)
+- [ ] Missing required field visual indicators on forms (dimension: polish, severity: MEDIUM)
 - [ ] Cookie consent banner for GDPR (dimension: feature, severity: LOW)

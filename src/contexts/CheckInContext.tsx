@@ -255,21 +255,22 @@ export function CheckInProvider({ children, coupleId, userId }: CheckInProviderP
   useRealtimeCouple<DbCheckIn>({
     table: 'check_ins',
     coupleId,
-    onUpdate: (record) => {
-      if (state.session && record.id === state.session.id && record.status !== 'in-progress') {
-        dispatch({ type: 'COMPLETE_CHECKIN' })
-      }
-    },
+    onUpdate: useCallback(
+      (record: DbCheckIn) => {
+        if (record.status !== 'in-progress') dispatch({ type: 'COMPLETE_CHECKIN' })
+      },
+      [dispatch],
+    ),
   })
-
   useRealtimeCouple<DbActionItem>({
     table: 'action_items',
     coupleId,
-    onInsert: (record) => setActionItems((prev) => [...prev, mapDbActionItem(record)]),
-    onUpdate: (record) => {
-      setActionItems((prev) => prev.map((item) => (item.id === record.id ? mapDbActionItem(record) : item)))
-    },
-    onDelete: (record) => setActionItems((prev) => prev.filter((item) => item.id !== record.id)),
+    onInsert: useCallback((r: DbActionItem) => setActionItems((p) => [...p, mapDbActionItem(r)]), []),
+    onUpdate: useCallback(
+      (r: DbActionItem) => setActionItems((p) => p.map((i) => (i.id === r.id ? mapDbActionItem(r) : i))),
+      [],
+    ),
+    onDelete: useCallback((r: DbActionItem) => setActionItems((p) => p.filter((i) => i.id !== r.id)), []),
   })
 
   const mutations = useCheckInMutations({ state, dispatch, coupleId, userId, actionItems })
