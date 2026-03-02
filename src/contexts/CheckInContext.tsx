@@ -138,9 +138,7 @@ function useCheckInMutations({ state, dispatch, coupleId, userId, actionItems }:
     await updateActionItemDb(actionItemId, updates)
   }, [])
 
-  const removeActionItem = useCallback(async (actionItemId: string) => {
-    await deleteActionItem(actionItemId)
-  }, [])
+  const removeActionItem = useCallback(async (id: string) => deleteActionItem(id), [])
 
   const toggleActionItem = useCallback(
     async (actionItemId: string) => {
@@ -155,16 +153,16 @@ function useCheckInMutations({ state, dispatch, coupleId, userId, actionItems }:
 
   const completeCheckIn = useCallback(async () => {
     if (!state.session) return
-    await updateCheckInStatus(state.session.id, 'completed')
+    const { error } = await updateCheckInStatus(state.session.id, 'completed')
+    if (error) {
+      console.error('Failed to complete check-in:', error)
+      return
+    }
     dispatch({ type: 'COMPLETE_CHECKIN' })
 
-    // Send summary email to both partners (non-blocking)
+    // Send summary email (non-blocking)
     if (typeof window !== 'undefined') {
-      import('@/app/(app)/checkin/actions')
-        .then((mod) => mod.sendCheckInSummaryEmail(state.session!.id))
-        .catch(() => {
-          // Email send failed -- non-blocking
-        })
+      import('@/app/(app)/checkin/actions').then((m) => m.sendCheckInSummaryEmail(state.session!.id)).catch(() => {})
     }
   }, [state.session, dispatch])
 

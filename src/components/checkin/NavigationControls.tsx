@@ -46,7 +46,7 @@ export function NavigationControls({
       <>
         <motion.div
           className={cn(
-            'fixed bottom-0 left-0 right-0 z-40',
+            'fixed bottom-0 left-0 right-0 z-[60]',
             'bg-white/95 backdrop-blur-sm border-t border-gray-200',
             'px-4 py-3 safe-area-bottom',
             className,
