@@ -44,7 +44,12 @@ export async function insertCheckIn(id: string, coupleId: string, startedAt: str
 
 export async function updateCheckInStatus(id: string, status: 'completed' | 'abandoned') {
   const supabase = createClient()
-  return supabase.from('check_ins').update({ status, completed_at: new Date().toISOString() }).eq('id', id)
+  return supabase
+    .from('check_ins')
+    .update({ status, completed_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
 }
 
 export async function insertNote(params: {

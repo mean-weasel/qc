@@ -155,7 +155,11 @@ function useCheckInMutations({ state, dispatch, coupleId, userId, actionItems }:
 
   const completeCheckIn = useCallback(async () => {
     if (!state.session) return
-    await updateCheckInStatus(state.session.id, 'completed')
+    const { error } = await updateCheckInStatus(state.session.id, 'completed')
+    if (error) {
+      console.error('Failed to complete check-in:', error)
+      return
+    }
     dispatch({ type: 'COMPLETE_CHECKIN' })
 
     // Send summary email to both partners (non-blocking)
