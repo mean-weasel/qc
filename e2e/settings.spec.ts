@@ -169,7 +169,7 @@ test.describe.serial('Settings — Saves', () => {
     await nameInput.fill('Alice Test')
     await page.getByRole('button', { name: /save profile/i }).click()
 
-    await expect(page.getByText('Profile updated')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-sonner-toast]', { hasText: 'Profile updated' })).toBeVisible({ timeout: 10000 })
   })
 
   test('restoring original display name succeeds', async ({ authedPage: page }) => {
@@ -181,7 +181,7 @@ test.describe.serial('Settings — Saves', () => {
     await nameInput.fill('Alice')
     await page.getByRole('button', { name: /save profile/i }).click()
 
-    await expect(page.getByText('Profile updated')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-sonner-toast]', { hasText: 'Profile updated' })).toBeVisible({ timeout: 10000 })
   })
 
   test('saving session rules shows success message', async ({ authedPage: page }) => {
