@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "doppler run -- next dev --turbopack",
     "dev:local": "next dev --turbopack",
+    "dev:lan": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
