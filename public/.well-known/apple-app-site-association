@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "B3A6AN2HA4.co.tryqc.app",
+        "paths": ["/auth/callback"]
+      }
+    ]
+  }
+}
