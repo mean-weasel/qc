@@ -12,6 +12,7 @@ export const PUBLIC_ROUTES = [
   '/invite',
   '/privacy',
   '/terms',
+  '/.well-known',
 ]
 
 export function isPublicRoute(pathname: string): boolean {
