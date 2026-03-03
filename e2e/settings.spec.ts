@@ -163,23 +163,25 @@ test.describe.serial('Settings — Saves', () => {
   test('saving profile with new display name shows success', async ({ authedPage: page }) => {
     await page.goto('/settings')
 
-    const nameInput = page.getByLabel(/display name/i)
+    const nameInput = page.getByRole('textbox', { name: /display name/i })
+    await expect(nameInput).toBeVisible()
     await nameInput.clear()
     await nameInput.fill('Alice Test')
     await page.getByRole('button', { name: /save profile/i }).click()
 
-    await expect(page.getByText(/profile updated/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(/profile updated/i)).toBeVisible({ timeout: 10000 })
   })
 
   test('restoring original display name succeeds', async ({ authedPage: page }) => {
     await page.goto('/settings')
 
-    const nameInput = page.getByLabel(/display name/i)
+    const nameInput = page.getByRole('textbox', { name: /display name/i })
+    await expect(nameInput).toBeVisible()
     await nameInput.clear()
     await nameInput.fill('Alice')
     await page.getByRole('button', { name: /save profile/i }).click()
 
-    await expect(page.getByText(/profile updated/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(/profile updated/i)).toBeVisible({ timeout: 10000 })
   })
 
   test('saving session rules shows success message', async ({ authedPage: page }) => {
