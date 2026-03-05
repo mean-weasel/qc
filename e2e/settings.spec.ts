@@ -167,24 +167,13 @@ test.describe.serial('Settings — Saves', () => {
     await expect(nameInput).toBeVisible()
     await nameInput.clear()
     await nameInput.fill('Alice Test')
+    await page.getByRole('button', { name: /save profile/i }).click()
 
-    const saveBtn = page.getByRole('button', { name: /save profile|saving/i })
-    await saveBtn.click()
-
-    // Wait for the action to complete: button transitions Saving... → Save Profile
-    await expect(page.getByRole('button', { name: /save profile/i })).toBeEnabled({ timeout: 15000 })
-
-    // Check for success via toast, inline text, or verify the saved value persisted
-    const successIndicator = page
-      .locator('[data-sonner-toast]', { hasText: 'Profile updated' })
-      .or(page.getByText('Profile updated successfully'))
-    const hasSuccess = await successIndicator.isVisible().catch(() => false)
-
-    if (!hasSuccess) {
-      // revalidatePath may have remounted the component — verify the value persisted instead
-      await page.reload()
-      await expect(page.getByLabel(/display name/i)).toHaveValue('Alice Test', { timeout: 10000 })
-    }
+    // revalidatePath may remount the component, losing the success state.
+    // Verify the value persisted by reloading and checking the input value.
+    await page.waitForLoadState('networkidle')
+    await page.reload()
+    await expect(page.getByLabel(/display name/i)).toHaveValue('Alice Test', { timeout: 15000 })
   })
 
   test('restoring original display name succeeds', async ({ authedPage: page }) => {
@@ -194,24 +183,13 @@ test.describe.serial('Settings — Saves', () => {
     await expect(nameInput).toBeVisible()
     await nameInput.clear()
     await nameInput.fill('Alice')
+    await page.getByRole('button', { name: /save profile/i }).click()
 
-    const saveBtn = page.getByRole('button', { name: /save profile|saving/i })
-    await saveBtn.click()
-
-    // Wait for the action to complete: button transitions Saving... → Save Profile
-    await expect(page.getByRole('button', { name: /save profile/i })).toBeEnabled({ timeout: 15000 })
-
-    // Check for success via toast, inline text, or verify the saved value persisted
-    const successIndicator = page
-      .locator('[data-sonner-toast]', { hasText: 'Profile updated' })
-      .or(page.getByText('Profile updated successfully'))
-    const hasSuccess = await successIndicator.isVisible().catch(() => false)
-
-    if (!hasSuccess) {
-      // revalidatePath may have remounted the component — verify the value persisted instead
-      await page.reload()
-      await expect(page.getByLabel(/display name/i)).toHaveValue('Alice', { timeout: 10000 })
-    }
+    // revalidatePath may remount the component, losing the success state.
+    // Verify the value persisted by reloading and checking the input value.
+    await page.waitForLoadState('networkidle')
+    await page.reload()
+    await expect(page.getByLabel(/display name/i)).toHaveValue('Alice', { timeout: 15000 })
   })
 
   test('saving session rules shows success message', async ({ authedPage: page }) => {
