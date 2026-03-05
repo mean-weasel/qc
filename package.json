@@ -26,13 +26,10 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@capacitor/app": "^8.0.1",
-    "@capacitor/core": "^8",
+    "@capacitor/core": "^8.1.0",
     "@capacitor/haptics": "^8.0.1",
-    "@capacitor/ios": "^8",
+    "@capacitor/ios": "^8.1.0",
     "@capacitor/keyboard": "^8.0.0",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.1",
     "@radix-ui/react-dialog": "^1",
     "@radix-ui/react-progress": "^1",
     "@radix-ui/react-radio-group": "^1",
@@ -66,7 +63,7 @@
     "zustand": "^5"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8",
+    "@capacitor/cli": "^8.1.0",
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
     "@playwright/test": "^1",

@@ -38,9 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        // Forward to Capacitor's proxy (fires appUrlOpen JS event for plugins)
-        let result = ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
-
         // Handle Universal Links for OAuth callback.
         // The WebView loads /auth/callback?code=... which exchanges the PKCE code for a session.
         if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
@@ -49,9 +46,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             DispatchQueue.main.async { [weak self] in
                 self?.capacitorWebView?.load(URLRequest(url: url))
             }
+            return true
         }
 
-        return result
+        return false
     }
 
     // MARK: - Session Persistence
