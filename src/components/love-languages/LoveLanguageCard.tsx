@@ -103,7 +103,7 @@ export function LoveLanguageCard({
 
           <div className="flex items-center gap-2 pt-2">
             {!isOwn && onCreateAction && (
-              <Button onClick={onCreateAction} size="sm" className="flex-1">
+              <Button onClick={onCreateAction} size="sm" className="min-h-[44px] flex-1">
                 <Heart className="h-4 w-4 mr-1" />
                 Suggest Action
               </Button>
@@ -111,13 +111,13 @@ export function LoveLanguageCard({
             {isOwn && (
               <>
                 {onEdit && (
-                  <Button onClick={onEdit} variant="outline" size="sm" className="flex-1">
+                  <Button onClick={onEdit} variant="outline" size="sm" className="min-h-[44px] flex-1">
                     <Edit2 className="h-4 w-4 mr-1" />
                     Edit
                   </Button>
                 )}
                 {onDelete && (
-                  <Button onClick={onDelete} variant="outline" size="sm">
+                  <Button onClick={onDelete} variant="outline" size="sm" className="min-h-[44px]">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}

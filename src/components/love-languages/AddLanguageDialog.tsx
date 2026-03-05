@@ -89,7 +89,13 @@ function ExamplesEditor({
           )}
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={() => onChange([...examples, ''])} className="w-fit">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => onChange([...examples, ''])}
+        className="min-h-[44px] w-fit"
+      >
         <Plus className="h-4 w-4 mr-1" />
         Add Example
       </Button>

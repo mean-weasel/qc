@@ -218,7 +218,7 @@ export function NoteList({
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             aria-label="Filter by category"
-            className="rounded-lg border border-border bg-input px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 rounded-lg border border-border bg-input px-3 py-2 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="all">All categories</option>
             <option value="uncategorized">Uncategorized</option>
@@ -249,7 +249,7 @@ export function NoteList({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as NoteSort)}
-          className="rounded-lg border border-border bg-input px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-11 rounded-lg border border-border bg-input px-3 py-2 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>

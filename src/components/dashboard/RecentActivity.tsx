@@ -110,7 +110,7 @@ export function RecentActivity({ activities, className }: RecentActivityProps): 
                 type="button"
                 onClick={() => handleFilterChange(f.id)}
                 className={cn(
-                  'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                  'shrink-0 rounded-full px-3 py-1 min-h-[44px] text-xs font-medium transition-colors',
                   filter === f.id
                     ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600',
@@ -137,7 +137,7 @@ export function RecentActivity({ activities, className }: RecentActivityProps): 
           <button
             type="button"
             onClick={() => setDisplayCount((c) => c + PAGE_SIZE)}
-            className="mt-3 w-full rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
+            className="mt-3 w-full rounded-lg border border-gray-200 py-2 min-h-[44px] text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             Show more
           </button>

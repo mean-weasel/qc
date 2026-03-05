@@ -77,10 +77,15 @@ export function DiscoveryCard({ discovery, onDelete }: Props): React.ReactElemen
           <div className="flex shrink-0 gap-1">
             {!isConverted && (
               <>
-                <Button variant="outline" size="sm" onClick={() => setShowConvertDialog(true)}>
+                <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setShowConvertDialog(true)}>
                   Convert to Language
                 </Button>
-                <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onDelete(discovery.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-[44px] text-destructive"
+                  onClick={() => onDelete(discovery.id)}
+                >
                   Delete
                 </Button>
               </>

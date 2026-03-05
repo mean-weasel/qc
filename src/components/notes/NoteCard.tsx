@@ -85,7 +85,7 @@ export function NoteCard({
               e.stopPropagation()
               onDelete(note)
             }}
-            className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+            className="rounded-md p-2.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
             aria-label="Delete note"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

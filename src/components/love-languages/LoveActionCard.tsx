@@ -89,19 +89,24 @@ export function LoveActionCard({
 
           <div className="flex items-center gap-2 pt-2">
             {!isCompleted && onComplete && (
-              <Button onClick={onComplete} size="sm" className="flex-1">
+              <Button onClick={onComplete} size="sm" className="min-h-[44px] flex-1">
                 <CheckCircle2 className="h-4 w-4 mr-1" />
                 Mark Complete
               </Button>
             )}
             {onEdit && (
-              <Button onClick={onEdit} variant="outline" size="sm" className={!isCompleted ? '' : 'flex-1'}>
+              <Button
+                onClick={onEdit}
+                variant="outline"
+                size="sm"
+                className={cn('min-h-[44px]', !isCompleted ? '' : 'flex-1')}
+              >
                 <Edit2 className="h-4 w-4 mr-1" />
                 Edit
               </Button>
             )}
             {onDelete && (
-              <Button onClick={onDelete} variant="outline" size="sm">
+              <Button onClick={onDelete} variant="outline" size="sm" className="min-h-[44px]">
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}

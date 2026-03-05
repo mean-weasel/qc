@@ -42,6 +42,12 @@ vi.mock('@/components/ui/label', () => ({
   ),
 }))
 
+vi.mock('@/components/ui/switch', () => ({
+  Switch: ({ checked, onCheckedChange, ...props }: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) => (
+    <button role="switch" aria-checked={checked} onClick={() => onCheckedChange?.(!checked)} {...props} />
+  ),
+}))
+
 vi.mock('@/components/settings/SessionProposalBanner', () => ({
   SessionProposalBanner: () => <div data-testid="session-proposal-banner" />,
 }))

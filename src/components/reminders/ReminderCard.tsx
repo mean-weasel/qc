@@ -115,18 +115,28 @@ export function ReminderCard({
 
         {isOwner && (
           <div className="flex shrink-0 gap-1">
-            <Button variant="ghost" size="sm" onClick={() => onToggle(reminder.id, !reminder.is_active)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px]"
+              onClick={() => onToggle(reminder.id, !reminder.is_active)}
+            >
               {reminder.is_active ? 'Pause' : 'Resume'}
             </Button>
 
             {reminder.is_snoozed ? (
-              <Button variant="ghost" size="sm" className="text-amber-600" onClick={() => onUnsnooze(reminder.id)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px] text-amber-600"
+                onClick={() => onUnsnooze(reminder.id)}
+              >
                 <AlarmClock className="mr-1 h-4 w-4" />
                 Unsnooze
               </Button>
             ) : (
               <div className="relative">
-                <Button variant="ghost" size="sm" onClick={() => setSnoozeOpen(!snoozeOpen)}>
+                <Button variant="ghost" size="sm" className="min-h-[44px]" onClick={() => setSnoozeOpen(!snoozeOpen)}>
                   <Clock className="mr-1 h-4 w-4" />
                   Snooze
                 </Button>
@@ -149,7 +159,12 @@ export function ReminderCard({
               </div>
             )}
 
-            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onDelete(reminder.id)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px] text-destructive"
+              onClick={() => onDelete(reminder.id)}
+            >
               Delete
             </Button>
           </div>

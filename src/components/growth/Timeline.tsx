@@ -58,7 +58,7 @@ function TimelineFilters({
               size="sm"
               onClick={() => onFilterChange(type)}
               className={cn(
-                'text-xs font-medium transition-all',
+                'min-h-[44px] text-xs font-medium transition-all',
                 filter === type && 'bg-pink-600 text-white hover:bg-pink-700',
               )}
             >
@@ -79,7 +79,7 @@ function TimelineFilters({
               variant={sort === sortType ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onSortChange(sortType)}
-              className="text-xs"
+              className="min-h-[44px] text-xs"
             >
               {sortType === 'newest' && <ChevronDown className="mr-1 h-3 w-3" />}
               {sortType === 'oldest' && <ChevronUp className="mr-1 h-3 w-3" />}

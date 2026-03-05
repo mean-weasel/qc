@@ -142,7 +142,10 @@ export function Navigation({ className = '' }: NavigationProps): React.ReactNode
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
-                <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>

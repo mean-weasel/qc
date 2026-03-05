@@ -89,7 +89,7 @@ function SessionRulesSection({ settings }: SessionRulesSectionProps): React.Reac
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-gray-900">Your Session Rules</h2>
         <Link href="/settings">
-          <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
+          <Button variant="ghost" size="default" className="text-xs sm:text-sm">
             <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
             <span className="hidden sm:inline">Configure</span>
             <span className="sm:hidden">Edit</span>

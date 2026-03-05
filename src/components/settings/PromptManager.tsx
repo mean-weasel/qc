@@ -82,7 +82,7 @@ export function PromptManager({ coupleId }: PromptManagerProps): React.ReactElem
           <button
             key={cat.id}
             onClick={() => handleCategoryChange(cat.id)}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap rounded-full px-3 py-2.5 text-sm font-medium min-h-[44px] transition-colors ${
               selectedCategoryId === cat.id
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -101,7 +101,7 @@ export function PromptManager({ coupleId }: PromptManagerProps): React.ReactElem
             <div className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm">{prompt}</div>
             <button
               onClick={() => handleRemovePrompt(index)}
-              className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+              className="shrink-0 rounded-md p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
               aria-label={`Remove prompt: ${prompt}`}
             >
               <Trash2 className="h-4 w-4" />
@@ -129,7 +129,7 @@ export function PromptManager({ coupleId }: PromptManagerProps): React.ReactElem
             }}
             placeholder="Type a new prompt..."
             maxLength={200}
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2.5 text-base min-h-[44px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button variant="outline" size="sm" onClick={handleAddPrompt} disabled={!newPrompt.trim()}>
             <Plus className="h-4 w-4 mr-1" />

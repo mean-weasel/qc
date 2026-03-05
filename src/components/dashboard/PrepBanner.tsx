@@ -99,7 +99,7 @@ export function PrepBanner({ lastCheckInDate, className }: PrepBannerProps): Rea
             {/* Dismiss button */}
             <button
               onClick={handleDismiss}
-              className="absolute right-3 top-3 rounded-full p-1 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+              className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full text-white/70 hover:bg-white/20 hover:text-white transition-colors"
               aria-label="Dismiss banner"
             >
               <X className="h-4 w-4" />

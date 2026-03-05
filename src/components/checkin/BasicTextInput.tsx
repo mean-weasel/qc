@@ -64,7 +64,7 @@ export function BasicTextInput({
         placeholder={placeholder}
         maxLength={maxLength}
         rows={4}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y min-h-[100px]"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y min-h-[100px]"
       />
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{helperText}</span>

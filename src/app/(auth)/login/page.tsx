@@ -67,7 +67,10 @@ function LoginForm() {
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Sign in to your account</h1>
           <p className="mt-2 text-sm text-gray-600">
             Or{' '}
-            <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              href="/signup"
+              className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center min-h-[44px]"
+            >
               create a new account
             </Link>
           </p>
@@ -86,7 +89,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="you@example.com"
             />
           </div>
@@ -101,7 +104,7 @@ function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="Your password"
             />
           </div>
@@ -109,7 +112,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-base min-h-[44px] font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -128,14 +131,14 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => handleOAuth('google')}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-base min-h-[44px] font-medium text-gray-700 hover:bg-gray-50"
           >
             Google
           </button>
           <button
             type="button"
             onClick={() => handleOAuth('github')}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-base min-h-[44px] font-medium text-gray-700 hover:bg-gray-50"
           >
             GitHub
           </button>

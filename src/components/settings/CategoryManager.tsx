@@ -132,7 +132,7 @@ export function CategoryManager({ coupleId }: CategoryManagerProps) {
           <h3 className="text-lg font-semibold">Discussion Categories</h3>
           <p className="text-sm text-gray-600">Customize categories for your check-in sessions</p>
         </div>
-        <Button onClick={openCreateDialog} size="sm">
+        <Button onClick={openCreateDialog}>
           <Plus className="mr-1 h-4 w-4" />
           Add Category
         </Button>

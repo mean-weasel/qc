@@ -40,7 +40,7 @@ export function MonthGroupSection({
         <div className="ml-12">
           <button
             onClick={onToggle}
-            className="flex items-center gap-2 text-lg font-semibold text-gray-900 transition-colors hover:text-pink-600 dark:text-gray-100"
+            className="flex min-h-[44px] items-center gap-2 text-lg font-semibold text-gray-900 transition-colors hover:text-pink-600 dark:text-gray-100"
           >
             <Calendar className="h-5 w-5" />
             {group.displayKey}

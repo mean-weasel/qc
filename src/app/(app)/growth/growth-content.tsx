@@ -174,7 +174,7 @@ export function GrowthContent({ coupleId, growthScores, moodHistory }: GrowthCon
               variant={activeView === 'timeline' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveView('timeline')}
-              className="rounded-md text-xs sm:text-sm"
+              className="min-h-[44px] rounded-md text-xs sm:text-sm"
             >
               <Award className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
               Timeline
@@ -183,7 +183,7 @@ export function GrowthContent({ coupleId, growthScores, moodHistory }: GrowthCon
               variant={activeView === 'progress' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveView('progress')}
-              className="rounded-md text-xs sm:text-sm"
+              className="min-h-[44px] rounded-md text-xs sm:text-sm"
             >
               <Target className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
               Progress
@@ -192,7 +192,7 @@ export function GrowthContent({ coupleId, growthScores, moodHistory }: GrowthCon
               variant={activeView === 'memories' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveView('memories')}
-              className="rounded-md text-xs sm:text-sm"
+              className="min-h-[44px] rounded-md text-xs sm:text-sm"
             >
               <Camera className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
               Memories
@@ -201,7 +201,7 @@ export function GrowthContent({ coupleId, growthScores, moodHistory }: GrowthCon
               variant={activeView === 'analytics' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveView('analytics')}
-              className="rounded-md text-xs sm:text-sm"
+              className="min-h-[44px] rounded-md text-xs sm:text-sm"
             >
               <BarChart3 className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
               Analytics

@@ -42,7 +42,7 @@ export function Header({ className = '', displayName, partnerName, avatarUrl }: 
             <button
               onClick={toggle}
               className={cn(
-                'p-2 rounded-lg transition-colors',
+                'p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors',
                 isDark ? 'text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20' : 'text-gray-500 hover:bg-gray-100',
               )}
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

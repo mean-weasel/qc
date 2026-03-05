@@ -114,21 +114,42 @@ export function RequestCard({
         <div className="flex shrink-0 gap-1">
           {isReceiver && isPending && (
             <>
-              <Button variant="ghost" size="sm" onClick={() => onRespond(request.id, 'accepted')}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px]"
+                onClick={() => onRespond(request.id, 'accepted')}
+              >
                 Accept
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onRespond(request.id, 'declined')}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px]"
+                onClick={() => onRespond(request.id, 'declined')}
+              >
                 Decline
               </Button>
             </>
           )}
           {canConvert && (
-            <Button variant="outline" size="sm" onClick={() => onConvertToReminder(request.id)} disabled={isConverting}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-[44px]"
+              onClick={() => onConvertToReminder(request.id)}
+              disabled={isConverting}
+            >
               {isConverting ? 'Converting...' : 'Convert to Reminder'}
             </Button>
           )}
           {!isReceiver && !isConverted && (
-            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onDelete(request.id)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px] text-destructive"
+              onClick={() => onDelete(request.id)}
+            >
               Delete
             </Button>
           )}

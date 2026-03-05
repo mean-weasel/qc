@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { updateSessionSettings } from '@/app/(app)/settings/actions'
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SessionProposalBanner } from '@/components/settings/SessionProposalBanner'
+import { Switch } from '@/components/ui/switch'
 import { hapticFeedback } from '@/lib/haptics'
 import type { DbSessionSettings } from '@/types/database'
 
@@ -139,7 +140,7 @@ function TimingSection({ settings }: { settings: Omit<DbSessionSettings, 'id' | 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Timing</h3>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="session_duration">Session Duration (min)</Label>
           <Input
@@ -231,20 +232,15 @@ interface ToggleFieldProps {
 }
 
 function ToggleField({ name, label, description, defaultChecked }: ToggleFieldProps): React.ReactElement {
+  const [checked, setChecked] = useState(defaultChecked)
   return (
-    <label className="flex items-start gap-3 cursor-pointer">
-      <input type="hidden" name={name} value="false" />
-      <input
-        type="checkbox"
-        name={name}
-        value="true"
-        defaultChecked={defaultChecked}
-        className="mt-1 h-4 w-4 rounded border-gray-300"
-      />
+    <label className="flex items-center justify-between gap-3 cursor-pointer">
+      <input type="hidden" name={name} value={String(checked)} />
       <div>
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
+      <Switch checked={checked} onCheckedChange={setChecked} />
     </label>
   )
 }

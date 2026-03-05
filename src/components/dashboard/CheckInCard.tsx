@@ -147,7 +147,7 @@ export function CheckInCard({
         </div>
 
         <Link href="/checkin" className="block">
-          <Button variant={isOverdue ? 'destructive' : 'default'} className="w-full" size="sm">
+          <Button variant={isOverdue ? 'destructive' : 'default'} className="w-full">
             Start Check-in
           </Button>
         </Link>

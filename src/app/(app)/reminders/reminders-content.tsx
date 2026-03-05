@@ -165,7 +165,7 @@ export function RemindersContent({ initialReminders, userId, coupleId, partnerId
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm capitalize ${filter === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`touch-target flex items-center gap-1.5 rounded-full px-3 py-2 text-sm capitalize ${filter === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             {f}
             <span
@@ -184,7 +184,7 @@ export function RemindersContent({ initialReminders, userId, coupleId, partnerId
           <button
             key={cat.id}
             onClick={() => setCategoryFilter(cat.id)}
-            className={`whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            className={`touch-target whitespace-nowrap rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
               categoryFilter === cat.id
                 ? 'border-primary bg-primary/10 text-primary'
                 : 'border-border text-muted-foreground hover:bg-muted'

@@ -31,16 +31,26 @@ export function PhotoGallery({ milestones, onAddMemory }: PhotoGalleryProps): Re
       {/* Header controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')}>
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            className="min-h-[44px]"
+            onClick={() => setFilter('all')}
+          >
             All ({milestones.length})
           </Button>
-          <Button variant={filter === 'photos' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('photos')}>
+          <Button
+            variant={filter === 'photos' ? 'default' : 'outline'}
+            size="sm"
+            className="min-h-[44px]"
+            onClick={() => setFilter('photos')}
+          >
             <Heart className="mr-1 h-4 w-4" />
             Photos ({milestonesWithPhotos.length})
           </Button>
         </div>
         {onAddMemory && (
-          <Button onClick={onAddMemory} size="sm">
+          <Button onClick={onAddMemory} size="sm" className="min-h-[44px]">
             <Plus className="mr-2 h-4 w-4" />
             Add Memory
           </Button>

@@ -121,7 +121,7 @@ export function DiscussionView({
             {prompts.length > 1 && (
               <button
                 onClick={shufflePrompt}
-                className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="shrink-0 rounded-md p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Next prompt"
               >
                 <Shuffle className="h-4 w-4" />

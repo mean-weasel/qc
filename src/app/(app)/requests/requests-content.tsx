@@ -27,7 +27,7 @@ function TabButton({ tab, active, count, pending, onClick }: TabButtonProps): Re
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm capitalize ${
+      className={`touch-target flex items-center gap-1.5 rounded-full px-3 py-2 text-sm capitalize ${
         active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
       }`}
     >
