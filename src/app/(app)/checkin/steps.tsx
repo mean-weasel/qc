@@ -85,7 +85,7 @@ export function CategoryDiscussionStep(): React.ReactNode {
   const category = categories.find((c) => c.id === currentCategory?.categoryId)
 
   return (
-    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-6">
       <div className="flex items-center justify-center">
         <SessionTimer durationMinutes={settings.sessionDuration} />
       </div>
@@ -122,7 +122,7 @@ export function ReflectionStep(): React.ReactNode {
   const { openReflectionModal } = useBookends()
 
   return (
-    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-6">
       <div className="text-center space-y-2">
         <div className="text-4xl">💭</div>
         <h2 className="text-2xl font-bold text-gray-900">Reflection</h2>

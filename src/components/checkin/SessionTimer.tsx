@@ -180,7 +180,7 @@ function TimerControls({
   onReset: () => void
 }): React.ReactNode {
   const btnClass = cn(
-    'flex h-6 w-6 items-center justify-center rounded-full transition-colors',
+    'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full transition-colors',
     'hover:bg-black/5 dark:hover:bg-white/10',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1',
   )

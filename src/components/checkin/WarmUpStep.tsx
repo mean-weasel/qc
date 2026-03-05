@@ -53,7 +53,7 @@ export function WarmUpStep(): React.ReactNode {
   }, [completeStep])
 
   return (
-    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-6">
       <div className="text-center space-y-2">
         <div className="text-4xl">
           <Sparkles className="h-10 w-10 mx-auto text-amber-500" />
@@ -69,11 +69,11 @@ export function WarmUpStep(): React.ReactNode {
       </div>
 
       <div className="flex justify-center gap-3">
-        <Button variant="ghost" size="sm" onClick={handleShuffle} className="gap-2 text-muted-foreground">
+        <Button variant="ghost" size="default" onClick={handleShuffle} className="gap-2 text-muted-foreground">
           <Shuffle className="h-4 w-4" />
           Shuffle
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleAdvance} className="gap-1 text-muted-foreground">
+        <Button variant="ghost" size="default" onClick={handleAdvance} className="gap-1 text-muted-foreground">
           <SkipForward className="h-4 w-4" />
           Skip
         </Button>
