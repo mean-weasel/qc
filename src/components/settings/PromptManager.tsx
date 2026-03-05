@@ -131,7 +131,7 @@ export function PromptManager({ coupleId }: PromptManagerProps): React.ReactElem
             maxLength={200}
             className="flex-1 rounded-md border border-input bg-background px-3 py-2.5 text-base min-h-[44px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <Button variant="outline" size="sm" onClick={handleAddPrompt} disabled={!newPrompt.trim()}>
+          <Button variant="outline" size="default" onClick={handleAddPrompt} disabled={!newPrompt.trim()}>
             <Plus className="h-4 w-4 mr-1" />
             Add
           </Button>
