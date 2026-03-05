@@ -21,13 +21,13 @@ export function LandingPage(): React.ReactNode {
           <div className="flex gap-3">
             <Link
               href="/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+              className="inline-flex items-center rounded-lg px-4 py-2 min-h-[44px] text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center rounded-lg bg-[hsl(var(--primary))] px-4 py-2 min-h-[44px] text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               Sign Up
             </Link>
