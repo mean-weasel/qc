@@ -16,6 +16,15 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /mobile-browser-workflows.*\.spec\.ts/,
+    },
+    {
+      name: 'Mobile Chrome',
+      use: {
+        ...devices['iPhone 15 Pro'],
+        browserName: 'chromium',
+      },
+      testMatch: /mobile-browser-workflows.*\.spec\.ts/,
     },
     ...(!process.env.CI
       ? [
