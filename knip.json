@@ -16,7 +16,7 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/github"
   ],
-  "ignoreBinaries": ["doppler"],
+  "ignoreBinaries": [],
   "exclude": ["types", "enumMembers"],
   "ignoreExportsUsedInFile": true,
   "ignore": [
