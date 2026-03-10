@@ -4,7 +4,7 @@ Project reference for Claude Code. Read this file first before making any change
 
 ## Project Overview
 
-QC (Quality Couple) -- a relationship wellness app for couples to check in, track growth, and strengthen their connection. Built on Next.js with Supabase auth, real-time sync, and Resend email. Deployed on Vercel with Doppler for secrets.
+QC (Quality Couple) -- a relationship wellness app for couples to check in, track growth, and strengthen their connection. Built on Next.js with Supabase auth, real-time sync, and Resend email. Deployed on Vercel with environment variables managed via Vercel.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ QC (Quality Couple) -- a relationship wellness app for couples to check in, trac
 | Dead Code  | Knip                                 |
 | CI         | GitHub Actions                       |
 | Deployment | Vercel (auto-deploy on push)         |
-| Secrets    | Doppler                              |
+| Secrets    | Vercel Environment Variables         |
 | Mobile     | Capacitor (iOS)                      |
 
 ## Directory Structure
@@ -104,8 +104,7 @@ supabase/
 
 ```bash
 # Development
-npm run dev              # Start dev server (Doppler + Turbopack)
-npm run dev:local        # Start dev server (local env only)
+npm run dev              # Start dev server (Turbopack)
 
 # Quality
 npm run lint             # Run ESLint
@@ -323,11 +322,11 @@ Storage bucket: `milestone-photos` (public read, authenticated upload)
 - Auto-deploys on push to `main`
 - Preview deploys on pull requests
 - Build command: `next build`
-- Environment variables managed via Doppler integration
+- Environment variables managed via Vercel
 
 ### Environment Variables
 
-All secrets live in Doppler. See `.env.example` for the full list:
+All secrets live in Vercel Environment Variables. See `.env.example` for the full list:
 
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` -- public Supabase config
 - `SUPABASE_SERVICE_ROLE_KEY` -- server-only admin access
@@ -365,7 +364,7 @@ Runs on push to `main` and pull requests:
 - **Retry limit**: max 3 attempts on any failing operation before stopping
 - **Never edit existing migrations**: create a new migration instead (enforced by hook)
 - **Never expose service role key**: only use in `lib/supabase/admin.ts` and cron
-- **Never commit `.env` files**: use Doppler (enforced by hook)
+- **Never commit `.env` files**: use Vercel env vars (enforced by hook)
 - **Never use `any`**: use `unknown` with type guards
 - **Never skip auth checks**: every API route and server action starts with `requireAuth()`
 - **Always enable RLS**: every new table must have RLS enabled with couple-scoped policies

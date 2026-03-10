@@ -31,6 +31,7 @@ export default defineConfig({
           {
             name: 'Mobile Safari',
             use: { ...devices['iPhone 12'] },
+            testMatch: /mobile-browser-workflows.*\.spec\.ts/,
           },
         ]
       : []),
