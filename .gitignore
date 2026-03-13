@@ -56,3 +56,4 @@ workflows/screenshots/
 
 # worktrees
 .worktrees/
+.env*.local

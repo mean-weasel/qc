@@ -1,4 +1,2 @@
 app_identifier("co.tryqc.app")
-apple_id("jermwatt@gmail.com")
-team_id("B3A6AN2HA4")
-itc_team_id("B3A6AN2HA4")
+team_id(ENV["APPLE_TEAM_ID"])
