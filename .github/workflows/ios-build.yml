@@ -66,6 +66,18 @@ jobs:
           echo "Key file size: $(wc -c < "$KEY_FILE") bytes"
           head -1 "$KEY_FILE"
 
+      - name: Verify secrets are set
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+        run: |
+          echo "ASC_KEY_ID length: ${#ASC_KEY_ID}"
+          echo "ASC_ISSUER_ID length: ${#ASC_ISSUER_ID}"
+          echo "APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
+          echo "ASC_KEY_ID first 4: ${ASC_KEY_ID:0:4}"
+          echo "ASC_ISSUER_ID first 4: ${ASC_ISSUER_ID:0:4}"
+
       - name: Build & upload to TestFlight
         working-directory: ios/App
         env:
