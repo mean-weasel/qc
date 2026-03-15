@@ -77,6 +77,16 @@ export function useMilestones(coupleId: string | null): UseMilestonesReturn {
   const createMilestone = useCallback(
     async (input: MilestoneInput): Promise<Milestone> => {
       if (!coupleId) throw new Error('No couple linked')
+
+      const { count: milestoneCount } = await supabase
+        .from('milestones')
+        .select('*', { count: 'exact', head: true })
+        .eq('couple_id', coupleId)
+
+      if (milestoneCount !== null && milestoneCount >= 200) {
+        throw new Error('You\u2019ve reached the maximum of 200 milestones. Delete some to create new ones.')
+      }
+
       try {
         setError(null)
 

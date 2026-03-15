@@ -108,6 +108,30 @@ describe('useMilestones', () => {
     expect(result.current.milestones).toHaveLength(1)
   })
 
+  it('throws when couple has reached 200 milestone cap', async () => {
+    setupFetchMilestones([])
+
+    const { result } = renderHook(() => useMilestones('couple-abc'))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    // Mock the count query: select().eq() resolves with count: 200
+    mockSupabase._queryBuilder.eq.mockResolvedValueOnce({ count: 200, data: null, error: null })
+
+    await act(async () => {
+      await expect(
+        result.current.createMilestone({
+          title: 'Over Cap',
+          description: 'Too many',
+          category: 'growth',
+          icon: '🌱',
+        }),
+      ).rejects.toThrow('maximum of 200 milestones')
+    })
+  })
+
   it('updates a milestone', async () => {
     setupFetchMilestones()
 
