@@ -18,7 +18,7 @@ test.describe('Invite Acceptance Flow', () => {
   test('invalid token shows error message', async ({ page }) => {
     await page.goto(invalidTokenUrl)
     await expect(page.getByRole('heading', { name: /invalid invite/i })).toBeVisible()
-    await expect(page.getByText(/invalid or has expired/i)).toBeVisible()
+    await expect(page.getByText(/invalid.*check with your partner/i)).toBeVisible()
     await expect(page.getByRole('link', { name: /go to login/i })).toBeVisible()
   })
 
