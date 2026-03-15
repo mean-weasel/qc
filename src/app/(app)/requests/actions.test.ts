@@ -116,6 +116,27 @@ describe('createRequest', () => {
 
     expect(result.error).toBe('Something went wrong. Please try again.')
   })
+
+  it('returns error when couple has reached 100 request cap', async () => {
+    const { createRequest } = await import('./actions')
+
+    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+      data: { couple_id: mockCoupleId },
+      error: null,
+    })
+
+    // Mock the count query: select().eq() resolves with count: 100
+    mockSupabase._queryBuilder.select = vi.fn().mockReturnValue(mockSupabase._queryBuilder)
+    mockSupabase._queryBuilder.eq = vi
+      .fn()
+      .mockReturnValueOnce(mockSupabase._queryBuilder)
+      .mockResolvedValueOnce({ count: 100, data: null, error: null })
+
+    const fd = makeFormData(validRequestData)
+    const result = await createRequest({}, fd)
+
+    expect(result.error).toContain('maximum of 100 requests')
+  })
 })
 
 describe('respondToRequest', () => {

@@ -44,6 +44,15 @@ export async function createRequest(_prev: RequestActionState, formData: FormDat
   const { data, error: validationError } = validate(requestSchema, raw)
   if (validationError || !data) return { error: validationError ?? 'Validation failed' }
 
+  const { count: requestCount } = await supabase
+    .from('requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('couple_id', profile.couple_id)
+
+  if (requestCount !== null && requestCount >= 100) {
+    return { error: 'You\u2019ve reached the maximum of 100 requests. Delete some to create new ones.' }
+  }
+
   const { error } = await supabase.from('requests').insert({
     couple_id: profile.couple_id,
     requested_by: user.id,
