@@ -15,6 +15,11 @@ vi.mock('@/lib/couples', () => ({
   resendInvite: vi.fn(),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 class RedirectError extends Error {
   constructor(public url: string) {
     super(`NEXT_REDIRECT:${url}`)

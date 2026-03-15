@@ -1,13 +1,17 @@
 import type { ReactElement } from 'react'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createRateLimiter } from '@/lib/rate-limit'
 
 import { getResend, EMAIL_FROM, BATCH_SIZE } from './resend'
+
+const emailDailyLimiter = createRateLimiter({ maxRequests: 50, windowSeconds: 86400 })
 
 interface SendEmailParams {
   to: string
   subject: string
   react: ReactElement
+  coupleId?: string
 }
 
 interface SendEmailResult {
@@ -15,7 +19,14 @@ interface SendEmailResult {
   error: { message: string } | null
 }
 
-export async function sendEmail({ to, subject, react }: SendEmailParams): Promise<SendEmailResult> {
+export async function sendEmail({ to, subject, react, coupleId }: SendEmailParams): Promise<SendEmailResult> {
+  if (coupleId) {
+    const allowed = await emailDailyLimiter.check(`email:daily:${coupleId}`)
+    if (!allowed) {
+      return { data: null, error: { message: 'Daily email limit reached for this couple' } }
+    }
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tryqc.co'
 
   const { data, error } = await getResend().emails.send({

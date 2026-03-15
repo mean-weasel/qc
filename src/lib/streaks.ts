@@ -127,6 +127,7 @@ export async function getStreakData(coupleId: string, supabase: SupabaseClient):
     .eq('status', 'completed')
     .not('completed_at', 'is', null)
     .order('completed_at', { ascending: false })
+    .limit(365)
 
   if (error) {
     console.error('Failed to fetch check-ins for streak:', error)

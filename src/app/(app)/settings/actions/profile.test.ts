@@ -12,6 +12,11 @@ vi.mock('@/lib/couples', () => ({ leaveCouple: vi.fn(), resendInvite: vi.fn() })
 vi.mock('@/lib/data-export', () => ({ exportUserData: vi.fn() }))
 vi.mock('@/lib/email/send', () => ({ sendEmail: vi.fn(), shouldSendEmail: vi.fn() }))
 vi.mock('@/lib/email/templates/invite', () => ({ InviteEmail: vi.fn() }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('next/navigation', () => ({

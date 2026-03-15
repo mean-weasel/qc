@@ -1,32 +1,25 @@
+import { createAdminClient } from '@/lib/supabase/admin'
+
 interface RateLimiterConfig {
   maxRequests: number
-  windowMs: number
-}
-
-interface RateLimitEntry {
-  count: number
-  resetAt: number
+  windowSeconds: number
+  failClosed?: boolean
 }
 
 export function createRateLimiter(config: RateLimiterConfig) {
-  const store = new Map<string, RateLimitEntry>()
-
   return {
-    check(key: string): boolean {
-      const now = Date.now()
-      const entry = store.get(key)
-
-      if (!entry || now >= entry.resetAt) {
-        store.set(key, { count: 1, resetAt: now + config.windowMs })
-        return true
+    async check(key: string): Promise<boolean> {
+      const supabase = createAdminClient()
+      const { data, error } = await supabase.rpc('check_rate_limit', {
+        p_key: key,
+        p_max_requests: config.maxRequests,
+        p_window_seconds: config.windowSeconds,
+      })
+      if (error) {
+        console.error('Rate limit check failed:', error)
+        return !config.failClosed
       }
-
-      if (entry.count >= config.maxRequests) {
-        return false
-      }
-
-      entry.count++
-      return true
+      return data as boolean
     },
   }
 }

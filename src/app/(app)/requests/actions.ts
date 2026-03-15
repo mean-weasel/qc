@@ -7,7 +7,10 @@ import { requireAuth } from '@/lib/auth'
 import { sendEmail, shouldSendEmail } from '@/lib/email/send'
 import { sanitizeDbError } from '@/lib/utils'
 import { RequestNotificationEmail } from '@/lib/email/templates/request-notification'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { validate } from '@/lib/validation'
+
+const requestLimiter = createRateLimiter({ maxRequests: 20, windowSeconds: 86400 })
 
 const requestSchema = z.object({
   requested_for: z.string().uuid('Invalid partner ID'),
@@ -32,6 +35,11 @@ export async function createRequest(_prev: RequestActionState, formData: FormDat
     return { error: 'You must be in a couple to create requests' }
   }
 
+  const allowed = await requestLimiter.check(`request:create:${profile.couple_id}`)
+  if (!allowed) {
+    return { error: 'Too many requests. Please try again later.' }
+  }
+
   const raw = {
     requested_for: formData.get('requested_for'),
     title: formData.get('title'),
@@ -43,6 +51,15 @@ export async function createRequest(_prev: RequestActionState, formData: FormDat
 
   const { data, error: validationError } = validate(requestSchema, raw)
   if (validationError || !data) return { error: validationError ?? 'Validation failed' }
+
+  const { count: requestCount } = await supabase
+    .from('requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('couple_id', profile.couple_id)
+
+  if (requestCount !== null && requestCount >= 100) {
+    return { error: 'You\u2019ve reached the maximum of 100 requests. Delete some to create new ones.' }
+  }
 
   const { error } = await supabase.from('requests').insert({
     couple_id: profile.couple_id,

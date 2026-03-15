@@ -3,6 +3,9 @@
 import { requireAuth } from '@/lib/auth'
 import { sendEmail, shouldSendEmail } from '@/lib/email/send'
 import { CheckInSummaryEmail } from '@/lib/email/templates/checkin-summary'
+import { createRateLimiter } from '@/lib/rate-limit'
+
+const checkInLimiter = createRateLimiter({ maxRequests: 10, windowSeconds: 86400 })
 
 const MOOD_LABELS: Record<number, string> = {
   1: 'Struggling',
@@ -17,6 +20,23 @@ const CATEGORY_LABELS: Record<string, string> = {
   communication: 'Communication',
   intimacy: 'Physical & Emotional Intimacy',
   goals: 'Shared Goals & Future',
+}
+
+export async function checkCheckInRateLimit(): Promise<{ allowed: boolean; error?: string }> {
+  const { user, supabase } = await requireAuth()
+
+  const { data: profile } = await supabase.from('profiles').select('couple_id').eq('id', user.id).single()
+
+  if (!profile?.couple_id) {
+    return { allowed: false, error: 'You must be in a couple to start a check-in' }
+  }
+
+  const allowed = await checkInLimiter.check(`checkin:create:${profile.couple_id}`)
+  if (!allowed) {
+    return { allowed: false, error: 'Daily check-in limit reached. Please try again tomorrow.' }
+  }
+
+  return { allowed: true }
 }
 
 export async function sendCheckInSummaryEmail(checkInId: string): Promise<void> {

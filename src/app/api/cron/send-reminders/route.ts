@@ -24,16 +24,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const now = new Date().toISOString()
 
   // Query active reminders that are due and have email notifications
+  const REMINDERS_CAP = 200
   const { data: reminders, error: queryError } = await supabase
     .from('reminders')
     .select('id, couple_id, created_by, title, message, notification_channel')
     .eq('is_active', true)
     .in('notification_channel', ['email', 'both'])
     .lte('scheduled_for', now)
+    .limit(REMINDERS_CAP)
 
   if (queryError) {
     console.error('[cron/send-reminders]', queryError.message)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+
+  if (reminders && reminders.length >= REMINDERS_CAP) {
+    console.warn(`[cron/send-reminders] Result hit cap of ${REMINDERS_CAP} -- some reminders may be deferred`)
   }
 
   if (!reminders || reminders.length === 0) {
@@ -96,6 +102,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (sentReminderIds.length > 0) {
     await supabase.from('reminders').update({ is_active: false }).in('id', sentReminderIds).eq('frequency', 'once')
   }
+
+  // Clean up expired rate limit entries opportunistically
+  await supabase.rpc('cleanup_expired_rate_limits')
 
   return NextResponse.json({
     status: 'ok',

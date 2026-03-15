@@ -17,6 +17,11 @@ vi.mock('@/lib/email/send', () => ({
   shouldSendEmail: vi.fn(),
 }))
 vi.mock('@/lib/data-export', () => ({ exportUserData: vi.fn() }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('next/navigation', () => ({
   redirect: vi.fn().mockImplementation((url: string) => {

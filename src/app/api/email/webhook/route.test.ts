@@ -10,6 +10,12 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => mockAdminClient,
 }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
+
 const mockVerify = vi.fn()
 vi.mock('svix', () => ({
   Webhook: class {

@@ -4,7 +4,7 @@ import { Webhook } from 'svix'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createRateLimiter } from '@/lib/rate-limit'
 
-const webhookLimiter = createRateLimiter({ maxRequests: 100, windowMs: 60_000 })
+const webhookLimiter = createRateLimiter({ maxRequests: 100, windowSeconds: 60 })
 
 type ResendEventType = 'email.delivered' | 'email.bounced' | 'email.complained'
 
@@ -19,7 +19,7 @@ interface ResendWebhookPayload {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const ip = request.headers.get('x-forwarded-for') ?? 'unknown'
-  if (!webhookLimiter.check(ip)) {
+  if (!(await webhookLimiter.check(ip))) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 

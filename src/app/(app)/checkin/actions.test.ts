@@ -17,6 +17,11 @@ vi.mock('@/lib/email/send', () => ({
 vi.mock('@/lib/email/templates/checkin-summary', () => ({
   CheckInSummaryEmail: vi.fn().mockReturnValue(null),
 }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 
 beforeEach(async () => {
   vi.clearAllMocks()
@@ -53,6 +58,35 @@ function setupFromMock(tableResponses: Record<string, { data: unknown; error: un
     return builder
   })
 }
+
+describe('checkCheckInRateLimit', () => {
+  it('returns allowed: true when under the limit', async () => {
+    const { checkCheckInRateLimit } = await import('./actions')
+
+    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+      data: { couple_id: mockCoupleId },
+      error: null,
+    })
+
+    const result = await checkCheckInRateLimit()
+
+    expect(result).toEqual({ allowed: true })
+  })
+
+  it('returns allowed: false when no couple', async () => {
+    const { checkCheckInRateLimit } = await import('./actions')
+
+    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+      data: { couple_id: null },
+      error: null,
+    })
+
+    const result = await checkCheckInRateLimit()
+
+    expect(result.allowed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+})
 
 describe('sendCheckInSummaryEmail', () => {
   it('sends email to both partners', async () => {

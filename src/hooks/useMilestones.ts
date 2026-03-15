@@ -8,6 +8,7 @@ import { milestoneSchema, validate } from '@/lib/validation'
 import type { Milestone, MilestoneCategory, MilestoneRarity } from '@/types'
 import {
   dbRowToMilestone,
+  enforceMilestoneCap,
   fetchMilestones,
   uploadMilestonePhoto,
   buildDbUpdates,
@@ -77,6 +78,8 @@ export function useMilestones(coupleId: string | null): UseMilestonesReturn {
   const createMilestone = useCallback(
     async (input: MilestoneInput): Promise<Milestone> => {
       if (!coupleId) throw new Error('No couple linked')
+      await enforceMilestoneCap(supabase, coupleId)
+
       try {
         setError(null)
 

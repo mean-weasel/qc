@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
 const mockFrom = vi.fn()
-const mockAdminClient = { from: mockFrom }
+const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null })
+const mockAdminClient = { from: mockFrom, rpc: mockRpc }
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => mockAdminClient,
@@ -30,7 +31,9 @@ function remindersChain(data: unknown[] = [], error: unknown = null) {
     select: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
         in: vi.fn().mockReturnValue({
-          lte: vi.fn().mockResolvedValue({ data, error }),
+          lte: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue({ data, error }),
+          }),
         }),
       }),
     }),

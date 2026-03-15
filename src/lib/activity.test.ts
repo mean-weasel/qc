@@ -4,6 +4,8 @@ import { getRecentActivity } from './activity'
 
 type TableData = Record<string, unknown[]>
 
+const mockUserId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+
 function mockSupabase(tableData: TableData = {}) {
   return {
     from: vi.fn((table: string) => {
@@ -14,6 +16,7 @@ function mockSupabase(tableData: TableData = {}) {
       chain.select = vi.fn(self)
       chain.eq = vi.fn(self)
       chain.not = vi.fn(self)
+      chain.or = vi.fn(self)
       chain.order = vi.fn(self)
       chain.limit = vi.fn().mockResolvedValue({ data, error: null })
       return chain
@@ -25,7 +28,7 @@ describe('getRecentActivity', () => {
   it('returns empty array when no data', async () => {
     const sb = mockSupabase()
 
-    const result = await getRecentActivity('c1', sb as never)
+    const result = await getRecentActivity('c1', mockUserId, sb as never)
 
     expect(result).toEqual([])
   })
@@ -35,7 +38,7 @@ describe('getRecentActivity', () => {
       check_ins: [{ completed_at: '2025-01-01T00:00:00Z', categories: ['Trust', 'Fun'] }],
     })
 
-    const result = await getRecentActivity('c1', sb as never)
+    const result = await getRecentActivity('c1', mockUserId, sb as never)
 
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
@@ -52,7 +55,7 @@ describe('getRecentActivity', () => {
       notes: [{ content: longContent, created_at: '2025-01-01T00:00:00Z' }],
     })
 
-    const result = await getRecentActivity('c1', sb as never)
+    const result = await getRecentActivity('c1', mockUserId, sb as never)
 
     expect(result[0].title).toBe('A'.repeat(50) + '...')
     expect(result[0].type).toBe('note')
@@ -66,7 +69,7 @@ describe('getRecentActivity', () => {
       ],
     })
 
-    const result = await getRecentActivity('c1', sb as never)
+    const result = await getRecentActivity('c1', mockUserId, sb as never)
 
     expect(result).toHaveLength(2)
     expect(result[0].type).toBe('milestone')
@@ -82,7 +85,7 @@ describe('getRecentActivity', () => {
       ],
     })
 
-    const result = await getRecentActivity('c1', sb as never, 2)
+    const result = await getRecentActivity('c1', mockUserId, sb as never, 2)
 
     expect(result).toHaveLength(2)
   })
@@ -92,7 +95,7 @@ describe('getRecentActivity', () => {
       check_ins: [{ completed_at: '2025-01-01T00:00:00Z', categories: null }],
     })
 
-    const result = await getRecentActivity('c1', sb as never)
+    const result = await getRecentActivity('c1', mockUserId, sb as never)
 
     expect(result[0].description).toBe('General check-in')
   })
