@@ -42,6 +42,8 @@ const LANGUAGE_TITLES: Record<string, string> = {
 
 export type OnboardingState = {
   error: string | null
+  success?: boolean
+  emailSent?: boolean
 }
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -192,12 +194,13 @@ export async function completeOnboarding(_prev: OnboardingState, formData: FormD
   const { data: invite, error: inviteError } = await createInvite(input.partnerEmail, supabase)
 
   if (inviteError || !invite) {
-    redirect('/dashboard')
+    return { error: null, success: true, emailSent: false }
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const inviteUrl = `${baseUrl}/invite/${invite.token}`
 
+  let inviteEmailSent = true
   try {
     await sendEmail({
       to: input.partnerEmail,
@@ -205,7 +208,7 @@ export async function completeOnboarding(_prev: OnboardingState, formData: FormD
       react: InviteEmail({ inviterName: input.displayName, inviteUrl }),
     })
   } catch {
-    // Email send failed -- non-blocking
+    inviteEmailSent = false
   }
 
   if (user.email) {
@@ -219,8 +222,12 @@ export async function completeOnboarding(_prev: OnboardingState, formData: FormD
         })
       }
     } catch {
-      // Email send failed -- non-blocking
+      // Welcome email send failed -- non-blocking
     }
+  }
+
+  if (!inviteEmailSent) {
+    return { error: null, success: true, emailSent: false }
   }
 
   redirect('/dashboard')

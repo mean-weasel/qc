@@ -52,6 +52,8 @@ export type CheckInAction =
   | { type: 'COMPLETE_CHECKIN' }
   | { type: 'ABANDON_CHECKIN' }
   | { type: 'RESTORE_SESSION'; payload: { session: CheckInSession } }
+  | { type: 'SET_ERROR'; payload: { error: string } }
+  | { type: 'CLEAR_ERROR' }
 
 export interface CheckInContextState {
   session: CheckInSession | null
@@ -63,6 +65,8 @@ export interface CheckInContextValue extends CheckInContextState {
   coupleId: string
   actionItems: ActionItem[]
   dispatch: (action: CheckInAction) => void
+  clearError: () => void
+  saveMoodDraft: (moodBefore: number | null, moodAfter: number | null, reflection: string | null) => void
   startCheckIn: (categories: string[]) => void
   goToStep: (step: CheckInStep) => void
   completeStep: (step: CheckInStep) => void
@@ -75,8 +79,8 @@ export interface CheckInContextValue extends CheckInContextState {
   removeActionItem: (actionItemId: string) => void
   toggleActionItem: (actionItemId: string) => void
   saveSession: () => void
-  completeCheckIn: () => void
-  abandonCheckIn: () => void
+  completeCheckIn: () => Promise<boolean>
+  abandonCheckIn: () => Promise<boolean>
   canGoToStep: (step: CheckInStep) => boolean
   getStepIndex: (step: CheckInStep) => number
   isStepCompleted: (step: CheckInStep) => boolean

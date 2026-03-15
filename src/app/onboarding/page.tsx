@@ -1,7 +1,9 @@
 'use client'
 
 import { Heart } from 'lucide-react'
-import { useActionState, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useActionState, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import { QuizStep } from '@/components/onboarding/QuizStep'
 import type { Preferences } from '@/components/onboarding/QuizStep'
@@ -41,10 +43,20 @@ export default function OnboardingPage() {
   const [reminderDay, setReminderDay] = useState('sunday')
   const [reminderTime, setReminderTime] = useState('20:00')
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   const [state, formAction, isPending] = useActionState<OnboardingState, FormData>(completeOnboarding, {
     error: null,
   })
+
+  useEffect(() => {
+    if (state.success) {
+      if (!state.emailSent) {
+        toast.warning("Your account is set up, but the invite email couldn't be sent. You can resend it from Settings.")
+      }
+      router.push('/dashboard')
+    }
+  }, [state, router])
 
   function handleSubmit() {
     formRef.current?.requestSubmit()

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { headers } from 'next/headers'
 
 import { requireAuth } from '@/lib/auth'
-import { acceptInvite, getInviteByToken } from '@/lib/couples'
+import { acceptInvite, getInviteStatusByToken, type InviteValidationStatus } from '@/lib/couples'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { validate } from '@/lib/validation'
@@ -25,26 +25,32 @@ export async function validateInvite(token: string): Promise<{
   valid: boolean
   inviterEmail: string | null
   error: string | null
+  reason: InviteValidationStatus
 }> {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') ?? 'unknown'
   if (!inviteLimiter.check(ip)) {
-    return { valid: false, inviterEmail: null, error: 'Too many requests. Please try again later.' }
+    return {
+      valid: false,
+      inviterEmail: null,
+      error: 'Too many requests. Please try again later.',
+      reason: 'not_found',
+    }
   }
 
   const { error: validationError } = validate(tokenSchema, { token })
 
   if (validationError) {
-    return { valid: false, inviterEmail: null, error: validationError }
+    return { valid: false, inviterEmail: null, error: validationError, reason: 'not_found' }
   }
 
-  const { data: invite, error } = await getInviteByToken(token)
+  const { status, invite } = await getInviteStatusByToken(token)
 
-  if (error || !invite) {
-    return { valid: false, inviterEmail: null, error: 'This invite is invalid or has expired.' }
+  if (status !== 'valid' || !invite) {
+    return { valid: false, inviterEmail: invite?.invited_email ?? null, error: null, reason: status }
   }
 
-  return { valid: true, inviterEmail: invite.invited_email, error: null }
+  return { valid: true, inviterEmail: invite.invited_email, error: null, reason: 'valid' }
 }
 
 export async function acceptInviteAction(_prev: InviteState, formData: FormData): Promise<InviteState> {

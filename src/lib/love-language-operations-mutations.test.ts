@@ -32,11 +32,13 @@ function makeDbLanguage(overrides: Partial<DbLoveLanguage> = {}): DbLoveLanguage
   }
 }
 
+const VALID_UUID = '00000000-0000-4000-8000-000000000001'
+
 function makeDbAction(overrides: Partial<DbLoveAction> = {}): DbLoveAction {
   return {
     id: 'action-1',
     couple_id: 'couple-1',
-    linked_language_id: 'lang-1',
+    linked_language_id: VALID_UUID,
     title: 'Write a love note',
     description: 'Leave a sticky note on the mirror',
     status: 'planned',
@@ -154,7 +156,7 @@ describe('insertAction', () => {
     mock.result.error = null
 
     const action = {
-      linkedLanguageId: 'lang-1' as string | null,
+      linkedLanguageId: VALID_UUID as string | null,
       title: 'Write a love note',
       description: 'Leave a sticky note on the mirror' as string | null,
       status: 'planned' as const,
@@ -166,7 +168,7 @@ describe('insertAction', () => {
     expect(mock.client.from).toHaveBeenCalledWith('love_actions')
     expect(mock.client.insert).toHaveBeenCalledWith({
       couple_id: 'couple-1',
-      linked_language_id: 'lang-1',
+      linked_language_id: VALID_UUID,
       title: 'Write a love note',
       description: 'Leave a sticky note on the mirror',
       status: 'planned',
@@ -185,7 +187,7 @@ describe('insertAction', () => {
     mock.result.error = { message: 'insert action failed' }
 
     const action = {
-      linkedLanguageId: null,
+      linkedLanguageId: VALID_UUID as string | null,
       title: 'Test',
       description: null,
       status: 'suggested' as const,

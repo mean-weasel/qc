@@ -1,8 +1,10 @@
 'use client'
 
 import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import type { BookendsState, QuickReflection, PreparationTopic } from '@/types/bookends'
+import type { BookendsState, QuickReflection } from '@/types/bookends'
 import { createClient } from '@/lib/supabase/client'
+import { bookEndsReducer, initialState, loadPrepTopicsFromStorage, savePrepTopicsToStorage } from './bookends-reducer'
+import type { PreparationTopic } from '@/types/bookends'
 
 interface BookendsContextValue extends BookendsState {
   addMyTopic: (content: string, isQuickTopic?: boolean) => void
@@ -16,120 +18,6 @@ interface BookendsContextValue extends BookendsState {
   closeReflectionModal: () => void
 }
 
-type BookendsAction =
-  | { type: 'ADD_MY_TOPIC'; payload: { content: string; isQuickTopic: boolean; authorId: string } }
-  | { type: 'REMOVE_MY_TOPIC'; payload: { topicId: string } }
-  | { type: 'REORDER_MY_TOPICS'; payload: { topics: PreparationTopic[] } }
-  | { type: 'SET_PARTNER_TOPICS'; payload: { topics: PreparationTopic[] } }
-  | { type: 'CLEAR_PREPARATION' }
-  | { type: 'SAVE_REFLECTION'; payload: QuickReflection }
-  | { type: 'SET_PARTNER_REFLECTION'; payload: QuickReflection }
-  | { type: 'OPEN_PREPARATION_MODAL' }
-  | { type: 'CLOSE_PREPARATION_MODAL' }
-  | { type: 'OPEN_REFLECTION_MODAL' }
-  | { type: 'CLOSE_REFLECTION_MODAL' }
-  | { type: 'MARK_PREP_REMINDER_SEEN' }
-  | { type: 'LOAD_STATE'; payload: Partial<BookendsState> }
-
-const initialState: BookendsState = {
-  preparation: null,
-  reflection: null,
-  partnerReflection: null,
-  isPreparationModalOpen: false,
-  isReflectionModalOpen: false,
-  hasSeenPrepReminder: false,
-  reflectionStreak: 0,
-}
-
-function bookEndsReducer(state: BookendsState, action: BookendsAction): BookendsState {
-  switch (action.type) {
-    case 'ADD_MY_TOPIC': {
-      const newTopic: PreparationTopic = {
-        id: crypto.randomUUID(),
-        content: action.payload.content,
-        authorId: action.payload.authorId,
-        isQuickTopic: action.payload.isQuickTopic,
-        priority: state.preparation?.myTopics.length || 0,
-        createdAt: new Date().toISOString(),
-      }
-      const preparation = state.preparation || {
-        id: crypto.randomUUID(),
-        myTopics: [],
-        partnerTopics: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      return {
-        ...state,
-        preparation: {
-          ...preparation,
-          myTopics: [...preparation.myTopics, newTopic],
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    }
-
-    case 'REMOVE_MY_TOPIC': {
-      if (!state.preparation) return state
-      return {
-        ...state,
-        preparation: {
-          ...state.preparation,
-          myTopics: state.preparation.myTopics.filter((t) => t.id !== action.payload.topicId),
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    }
-
-    case 'REORDER_MY_TOPICS': {
-      if (!state.preparation) return state
-      return {
-        ...state,
-        preparation: {
-          ...state.preparation,
-          myTopics: action.payload.topics,
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    }
-
-    case 'SET_PARTNER_TOPICS': {
-      const preparation = state.preparation || {
-        id: crypto.randomUUID(),
-        myTopics: [],
-        partnerTopics: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      return {
-        ...state,
-        preparation: { ...preparation, partnerTopics: action.payload.topics, updatedAt: new Date().toISOString() },
-      }
-    }
-
-    case 'CLEAR_PREPARATION':
-      return { ...state, preparation: null }
-    case 'SAVE_REFLECTION':
-      return { ...state, reflection: action.payload, reflectionStreak: state.reflectionStreak + 1 }
-    case 'SET_PARTNER_REFLECTION':
-      return { ...state, partnerReflection: action.payload }
-    case 'OPEN_PREPARATION_MODAL':
-      return { ...state, isPreparationModalOpen: true }
-    case 'CLOSE_PREPARATION_MODAL':
-      return { ...state, isPreparationModalOpen: false }
-    case 'OPEN_REFLECTION_MODAL':
-      return { ...state, isReflectionModalOpen: true, reflection: null }
-    case 'CLOSE_REFLECTION_MODAL':
-      return { ...state, isReflectionModalOpen: false }
-    case 'MARK_PREP_REMINDER_SEEN':
-      return { ...state, hasSeenPrepReminder: true }
-    case 'LOAD_STATE':
-      return { ...state, ...action.payload }
-    default:
-      return state
-  }
-}
-
 const BookendsContext = createContext<BookendsContextValue | null>(null)
 
 interface BookendsProviderProps {
@@ -140,6 +28,30 @@ interface BookendsProviderProps {
 
 export function BookendsProvider({ children, coupleId, userId }: BookendsProviderProps): React.ReactNode {
   const [state, dispatch] = useReducer(bookEndsReducer, initialState)
+
+  // Restore preparation topics from localStorage on mount
+  useEffect(() => {
+    const topics = loadPrepTopicsFromStorage(coupleId)
+    if (topics && topics.length > 0) {
+      dispatch({
+        type: 'LOAD_STATE',
+        payload: {
+          preparation: {
+            id: crypto.randomUUID(),
+            myTopics: topics,
+            partnerTopics: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      })
+    }
+  }, [coupleId])
+
+  // Persist preparation topics to localStorage whenever they change
+  useEffect(() => {
+    savePrepTopicsToStorage(coupleId, state.preparation?.myTopics ?? [])
+  }, [coupleId, state.preparation?.myTopics])
 
   // Load mood data from last completed check-in
   useEffect(() => {

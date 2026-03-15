@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { LoveLanguage, LoveAction, DbLoveLanguage, DbLoveAction } from '@/types'
 
 import { createClient } from '@/lib/supabase/client'
+import { loveActionSchema, validate } from '@/lib/validation'
 
 function getClient(): SupabaseClient {
   return createClient()
@@ -119,6 +120,16 @@ export async function insertAction(
   coupleId: string,
   action: Omit<LoveAction, 'id' | 'coupleId' | 'completedCount' | 'lastCompletedAt' | 'createdAt'>,
 ): Promise<LoveAction> {
+  const { error: validationError } = validate(loveActionSchema, {
+    title: action.title,
+    description: action.description,
+    language_id: action.linkedLanguageId,
+    status: action.status,
+    frequency: action.frequency,
+    difficulty: action.difficulty,
+  })
+  if (validationError) throw new Error(validationError)
+
   const supabase = getClient()
   const { data, error } = await supabase
     .from('love_actions')

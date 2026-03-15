@@ -12,6 +12,31 @@ export const createItemSchema = z.object({
 /** @public */
 export const updateItemSchema = createItemSchema.partial()
 
+export const milestoneSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  category: z.string().max(50).optional(),
+  rarity: z.enum(['common', 'rare', 'epic', 'legendary']).optional(),
+  points: z.number().min(5).max(100).optional(),
+  icon: z
+    .string()
+    .max(10)
+    .refine(
+      (val) => !val || /\S/.test(val.replace(/[\u200B-\u200D\uFEFF]/g, '')),
+      'Icon must contain a visible character',
+    )
+    .optional(),
+})
+
+export const loveActionSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).nullable().optional(),
+  language_id: z.string().uuid().nullable(),
+  status: z.enum(['suggested', 'planned', 'recurring']).optional(),
+  frequency: z.enum(['once', 'weekly', 'monthly', 'surprise']).optional(),
+  difficulty: z.enum(['easy', 'moderate', 'challenging']).optional(),
+})
+
 interface ValidateSuccess<T> {
   data: T
   error?: undefined

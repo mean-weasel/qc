@@ -1,9 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageCircle, Clock, Users, ArrowRight, Play, Settings, Sparkles, FileText, History } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { formatDistanceToNow } from 'date-fns'
+import {
+  MessageCircle,
+  Clock,
+  Users,
+  ArrowRight,
+  Play,
+  Settings,
+  Sparkles,
+  FileText,
+  AlertCircle,
+  X,
+} from 'lucide-react'
 import { MotionBox, StaggerContainer, StaggerItem } from '@/components/ui/motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -24,59 +33,7 @@ import {
   WarmUpStep,
 } from './steps'
 import type { SessionSettings } from '@/types'
-
-interface RecentCheckIn {
-  id: string
-  categories: string[]
-  completed_at: string
-  duration_minutes: number | null
-}
-
-function RecentCheckInsSection({ coupleId }: { coupleId: string }): React.ReactNode {
-  const [checkIns, setCheckIns] = useState<RecentCheckIn[]>([])
-  const supabase = createClient()
-
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('check_ins')
-        .select('id, categories, completed_at, duration_minutes')
-        .eq('couple_id', coupleId)
-        .eq('status', 'completed')
-        .not('completed_at', 'is', null)
-        .order('completed_at', { ascending: false })
-        .limit(3)
-      if (data) setCheckIns(data as RecentCheckIn[])
-    }
-    load()
-  }, [coupleId, supabase])
-
-  if (checkIns.length === 0) return null
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <History className="h-5 w-5 text-gray-600" />
-        Recent Check-ins
-      </h2>
-      <div className="space-y-3">
-        {checkIns.map((ci) => (
-          <div key={ci.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <div className="font-medium text-gray-900">
-                {ci.categories.length > 0 ? ci.categories.join(', ') : 'General check-in'}
-              </div>
-              <div className="text-sm text-gray-600">
-                {formatDistanceToNow(new Date(ci.completed_at), { addSuffix: true })}
-                {ci.duration_minutes ? ` \u2022 ${ci.duration_minutes} minutes` : ''}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+import { RecentCheckInsSection } from './RecentCheckInsSection'
 
 interface SessionRulesSectionProps {
   settings: SessionSettings
@@ -143,6 +100,23 @@ function QuickStartSection({ topicCount, onPrepare, onStart }: QuickStartSection
   )
 }
 
+function CheckInErrorBanner(): React.ReactNode {
+  const { error, clearError } = useCheckInContext()
+  if (!error) return null
+
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+      <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="text-sm text-red-800">{error}</p>
+      </div>
+      <button onClick={clearError} className="text-red-400 hover:text-red-600">
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
+}
+
 function CheckInLanding(): React.ReactNode {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const { getActiveSettings } = useSessionSettings()
@@ -167,6 +141,7 @@ function CheckInLanding(): React.ReactNode {
 
   return (
     <MotionBox variant="page" className="space-y-8">
+      <CheckInErrorBanner />
       <div className="text-center">
         <div className="flex justify-center mb-4">
           <div className="bg-pink-100 rounded-full p-3">
@@ -281,6 +256,7 @@ function CheckInWizard(): React.ReactNode {
 
   return (
     <div className="space-y-6">
+      <CheckInErrorBanner />
       {currentStep !== 'completion' && (
         <ProgressBar progress={session.progress} currentStep={currentStep} className="mb-8" />
       )}
@@ -291,6 +267,17 @@ function CheckInWizard(): React.ReactNode {
 
 export default function CheckInPage(): React.ReactNode {
   const { session } = useCheckInContext()
+
+  useEffect(() => {
+    if (!session) return
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [session])
 
   if (session) {
     return <CheckInWizard />

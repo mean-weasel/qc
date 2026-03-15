@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import * as Sentry from '@sentry/nextjs'
 import { AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,10 +12,17 @@ interface ErrorPageProps {
 }
 
 export default function ErrorPage({ error, reset }: ErrorPageProps): React.ReactNode {
+  const router = useRouter()
+
   useEffect(() => {
     console.error('App error:', error)
     Sentry.captureException(error)
   }, [error])
+
+  function handleRetry(): void {
+    router.refresh()
+    reset()
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
@@ -24,7 +32,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.React
         We hit an unexpected error. You can try again or head back to the dashboard.
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" onClick={reset}>
+        <Button variant="outline" onClick={handleRetry}>
           Try Again
         </Button>
         <Button onClick={() => (window.location.href = '/dashboard')}>Go Home</Button>

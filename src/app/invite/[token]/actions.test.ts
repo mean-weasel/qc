@@ -18,6 +18,7 @@ vi.mock('next/headers', () => ({
 }))
 vi.mock('@/lib/couples', () => ({
   getInviteByToken: vi.fn(),
+  getInviteStatusByToken: vi.fn(),
   acceptInvite: vi.fn(),
 }))
 class RedirectError extends Error {
@@ -55,11 +56,11 @@ function makeFormData(entries: Record<string, string>): FormData {
 describe('validateInvite', () => {
   it('returns valid for a good token', async () => {
     const { validateInvite } = await import('./actions')
-    const { getInviteByToken } = await import('@/lib/couples')
+    const { getInviteStatusByToken } = await import('@/lib/couples')
 
-    ;(getInviteByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: { invited_email: 'partner@example.com' },
-      error: null,
+    ;(getInviteStatusByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 'valid',
+      invite: { invited_email: 'partner@example.com' },
     })
 
     const result = await validateInvite(mockToken)
@@ -68,8 +69,9 @@ describe('validateInvite', () => {
       valid: true,
       inviterEmail: 'partner@example.com',
       error: null,
+      reason: 'valid',
     })
-    expect(getInviteByToken).toHaveBeenCalledWith(mockToken)
+    expect(getInviteStatusByToken).toHaveBeenCalledWith(mockToken)
   })
 
   it('returns invalid for a non-uuid token', async () => {
@@ -81,19 +83,50 @@ describe('validateInvite', () => {
     expect(result.error).toBeTruthy()
   })
 
-  it('returns invalid when invite not found', async () => {
+  it('returns not_found reason when invite does not exist', async () => {
     const { validateInvite } = await import('./actions')
-    const { getInviteByToken } = await import('@/lib/couples')
+    const { getInviteStatusByToken } = await import('@/lib/couples')
 
-    ;(getInviteByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: null,
-      error: 'Not found',
+    ;(getInviteStatusByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 'not_found',
+      invite: null,
     })
 
     const result = await validateInvite(mockToken)
 
     expect(result.valid).toBe(false)
-    expect(result.error).toBe('This invite is invalid or has expired.')
+    expect(result.reason).toBe('not_found')
+  })
+
+  it('returns accepted reason when invite was already accepted', async () => {
+    const { validateInvite } = await import('./actions')
+    const { getInviteStatusByToken } = await import('@/lib/couples')
+
+    ;(getInviteStatusByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 'accepted',
+      invite: { invited_email: 'partner@example.com' },
+    })
+
+    const result = await validateInvite(mockToken)
+
+    expect(result.valid).toBe(false)
+    expect(result.reason).toBe('accepted')
+    expect(result.inviterEmail).toBe('partner@example.com')
+  })
+
+  it('returns expired reason when invite has expired', async () => {
+    const { validateInvite } = await import('./actions')
+    const { getInviteStatusByToken } = await import('@/lib/couples')
+
+    ;(getInviteStatusByToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 'expired',
+      invite: { invited_email: 'partner@example.com' },
+    })
+
+    const result = await validateInvite(mockToken)
+
+    expect(result.valid).toBe(false)
+    expect(result.reason).toBe('expired')
   })
 })
 

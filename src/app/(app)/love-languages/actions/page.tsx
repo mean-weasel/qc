@@ -15,7 +15,9 @@ import type { LoveAction, LoveActionStatus, LoveActionFrequency, LoveActionDiffi
 
 function LoveActionsContent(): React.ReactNode {
   const searchParams = useSearchParams()
-  const preselectedLanguageId = searchParams.get('languageId')
+  const rawLanguageId = searchParams.get('languageId')
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const preselectedLanguageId = rawLanguageId && UUID_RE.test(rawLanguageId) ? rawLanguageId : null
 
   const { languages, partnerLanguages, actions, addAction, updateAction, deleteAction, completeAction } =
     useLoveLanguages()

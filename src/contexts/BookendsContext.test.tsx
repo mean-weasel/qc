@@ -32,6 +32,14 @@ vi.mock('@/lib/supabase/client', () => ({
 let uuidCounter = 0
 vi.stubGlobal('crypto', { randomUUID: () => `uuid-${++uuidCounter}` })
 
+const mockStorage = new Map<string, string>()
+vi.stubGlobal('localStorage', {
+  getItem: (key: string) => mockStorage.get(key) ?? null,
+  setItem: (key: string, value: string) => mockStorage.set(key, value),
+  removeItem: (key: string) => mockStorage.delete(key),
+  clear: () => mockStorage.clear(),
+})
+
 // Dynamic import after mocks are in place
 const { BookendsProvider, useBookends } = await import('./BookendsContext')
 
@@ -50,6 +58,7 @@ function wrapper({ children }: { children: ReactNode }): ReactNode {
 beforeEach(() => {
   uuidCounter = 0
   mockMaybeSingle.mockResolvedValue({ data: null, error: null })
+  mockStorage.clear()
 })
 
 // ---------------------------------------------------------------------------

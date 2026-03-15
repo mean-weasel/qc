@@ -48,6 +48,15 @@ async function aliceCreatesAction(page: Page, title: string): Promise<void> {
   // Fill description
   await page.getByLabel(/description/i).fill('An E2E test action created by Alice')
 
+  // Select a love language (required for validation)
+  const languageSelect = page.locator('button[role="combobox"]').first()
+  if (await languageSelect.isVisible()) {
+    await languageSelect.click()
+    // Pick the first available option
+    const firstOption = page.getByRole('option').first()
+    await firstOption.click()
+  }
+
   // Submit the form (button text is "Add Action" for new actions)
   await page.getByRole('button', { name: /^add action$/i }).click()
 
@@ -57,8 +66,8 @@ async function aliceCreatesAction(page: Page, title: string): Promise<void> {
 
 /** Verify the action appears in Alice's Pending tab */
 async function aliceVerifiesAction(page: Page, title: string): Promise<void> {
-  // Pending tab is the default tab
-  await expect(page.getByText(title)).toBeVisible({ timeout: 15000 })
+  // The insert may still be in-flight after the dialog closes — poll with reloads
+  await expectVisibleWithReloads(page, title, 3)
 }
 
 /** Bob navigates to love actions and verifies Alice's action is visible */
@@ -66,12 +75,23 @@ async function bobVerifiesAction(page: Page, title: string): Promise<void> {
   await page.goto('/love-languages/actions')
   await expect(page.getByRole('heading', { name: /love actions/i })).toBeVisible({ timeout: 15000 })
 
-  // Reload for fresh data (more reliable than real-time in CI)
-  await page.reload()
-  await expect(page.getByRole('heading', { name: /love actions/i })).toBeVisible({ timeout: 15000 })
+  // Realtime sync is unreliable in CI — poll with reloads
+  await expectVisibleWithReloads(page, title, 5)
+}
 
-  // Alice's action should be visible in the Pending tab (default)
-  await expect(page.getByText(title)).toBeVisible({ timeout: 15000 })
+/** Reload the page up to maxReloads times until the text appears */
+async function expectVisibleWithReloads(page: Page, title: string, maxReloads: number): Promise<void> {
+  for (let attempt = 0; attempt <= maxReloads; attempt++) {
+    const locator = page.getByText(title)
+    const visible = await locator.isVisible().catch(() => false)
+    if (visible) return
+    await page.reload()
+    await expect(page.getByRole('heading', { name: /love actions/i })).toBeVisible({ timeout: 15000 })
+    // Give the page a moment to render after reload
+    await page.waitForTimeout(1000)
+  }
+  // Final assertion — will produce the proper Playwright error if still not visible
+  await expect(page.getByText(title)).toBeVisible({ timeout: 10000 })
 }
 
 test.describe('Workflow 09: Love Actions Sync', () => {

@@ -11,6 +11,8 @@ import { SPRING_CONFIGS } from '@/lib/animations'
 interface Props {
   /** Duration in minutes for the timer */
   durationMinutes: number
+  /** ISO timestamp when the session started — enables cross-device timer sync */
+  sessionStartedAt?: string | null
   /** Called when the timer reaches zero */
   onTimeUp?: () => void
   /** Whether to auto-start the timer on mount */
@@ -60,6 +62,7 @@ function getPhaseStyles(phase: TimerPhase): (typeof PHASE_STYLES)[TimerPhase] {
 
 export function SessionTimer({
   durationMinutes,
+  sessionStartedAt,
   onTimeUp,
   autoStart = false,
   enableHaptics = true,
@@ -70,6 +73,7 @@ export function SessionTimer({
 
   const { timeRemaining, isRunning, isPaused, start, pause, resume, reset, formattedTime } = useSessionTimer({
     durationMinutes,
+    sessionStartedAt,
     onTimeUp: () => {
       if (enableHaptics) {
         hapticFeedback.warning()

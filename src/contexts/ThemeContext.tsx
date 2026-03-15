@@ -34,8 +34,8 @@ export function ThemeProvider({
 }: ThemeProviderProps): React.ReactNode {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return defaultTheme
-    const stored = localStorage.getItem(storageKey) as Theme | null
-    return stored ?? defaultTheme
+    const stored = localStorage.getItem(storageKey)
+    return stored === 'light' || stored === 'dark' ? stored : defaultTheme
   })
 
   const isDark = theme === 'dark'
