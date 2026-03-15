@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
 import { hapticFeedback } from '@/lib/haptics'
+import { milestoneSchema, validate } from '@/lib/validation'
 import type { Milestone, MilestoneCategory, MilestoneRarity } from '@/types'
 
 export interface MilestoneInput {
@@ -57,6 +58,18 @@ async function fetchMilestones(supabase: ReturnType<typeof createClient>, couple
   return (data ?? []).map(dbRowToMilestone)
 }
 
+const IMAGE_MAGIC_BYTES: Record<string, number[]> = {
+  'image/jpeg': [0xff, 0xd8, 0xff],
+  'image/png': [0x89, 0x50, 0x4e, 0x47],
+  'image/webp': [0x52, 0x49, 0x46, 0x46],
+}
+
+async function validateImageMagicBytes(file: File): Promise<boolean> {
+  const buffer = await file.slice(0, 8).arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  return Object.values(IMAGE_MAGIC_BYTES).some((magic) => magic.every((byte, i) => bytes[i] === byte))
+}
+
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024 // 10 MB
 
 async function uploadMilestonePhoto(
@@ -67,6 +80,11 @@ async function uploadMilestonePhoto(
 ): Promise<string> {
   if (file.size > MAX_PHOTO_SIZE) {
     throw new Error(`Photo must be under 10 MB (yours is ${(file.size / 1024 / 1024).toFixed(1)} MB)`)
+  }
+
+  const isValidImage = await validateImageMagicBytes(file)
+  if (!isValidImage) {
+    throw new Error("This file doesn't appear to be a valid image")
   }
 
   const ext = file.name.split('.').pop() ?? 'jpg'
@@ -143,6 +161,17 @@ export function useMilestones(coupleId: string | null): UseMilestonesReturn {
       if (!coupleId) throw new Error('No couple linked')
       try {
         setError(null)
+
+        const { error: validationError } = validate(milestoneSchema, {
+          title: input.title,
+          description: input.description,
+          category: input.category,
+          icon: input.icon,
+          rarity: input.rarity,
+          points: input.points,
+        })
+        if (validationError) throw new Error(validationError)
+
         const { data, error: insertError } = await supabase
           .from('milestones')
           .insert({

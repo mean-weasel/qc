@@ -202,6 +202,7 @@ function NoteEditorForm({ note, onClose }: { note?: DbNote | null; onClose: () =
 
         <form action={formAction} className="flex flex-1 flex-col overflow-hidden">
           {isEditing && <input type="hidden" name="id" value={note.id} />}
+          {isEditing && note.updated_at && <input type="hidden" name="updated_at" value={note.updated_at} />}
           <input type="hidden" name="privacy" value={privacy} />
           <input type="hidden" name="tags" value={JSON.stringify(tags)} />
 

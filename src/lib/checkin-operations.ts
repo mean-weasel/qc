@@ -52,6 +52,19 @@ export async function updateCheckInStatus(id: string, status: 'completed' | 'aba
     .single()
 }
 
+export async function saveDraftMoodReflection(
+  checkInId: string,
+  moodBefore: number | null,
+  moodAfter: number | null,
+  reflection: string | null,
+) {
+  const supabase = createClient()
+  return supabase
+    .from('check_ins')
+    .update({ mood_before: moodBefore, mood_after: moodAfter, reflection })
+    .eq('id', checkInId)
+}
+
 export async function insertNote(params: {
   coupleId: string
   authorId: string

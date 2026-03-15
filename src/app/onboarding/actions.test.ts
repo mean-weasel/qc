@@ -143,10 +143,9 @@ describe('completeOnboarding', () => {
     expect(result.error).toBe('Couple creation failed')
   })
 
-  it('redirects to dashboard when invite creation fails (non-blocking)', async () => {
+  it('returns partial success when invite creation fails', async () => {
     const { completeOnboarding } = await import('./actions')
     const { createCouple, createInvite } = await import('@/lib/couples')
-    const { redirect } = await import('next/navigation')
 
     mockSupabase._queryBuilder.update = vi.fn().mockReturnValue(mockSupabase._queryBuilder)
     mockSupabase._queryBuilder.eq = vi.fn().mockReturnValue({ data: null, error: null })
@@ -160,9 +159,9 @@ describe('completeOnboarding', () => {
     })
 
     const fd = makeFormData({ displayName: 'Jeremy', partnerEmail: 'partner@example.com' })
-    await expect(completeOnboarding({ error: null }, fd)).rejects.toThrow('NEXT_REDIRECT:/dashboard')
+    const result = await completeOnboarding({ error: null }, fd)
 
-    expect(redirect).toHaveBeenCalledWith('/dashboard')
+    expect(result).toEqual({ error: null, success: true, emailSent: false })
   })
 })
 
@@ -223,11 +222,10 @@ describe('completeOnboarding - edge cases', () => {
     expect(redirect).toHaveBeenCalledWith('/dashboard')
   })
 
-  it('redirects even when email send fails (non-blocking)', async () => {
+  it('returns partial success when invite email send fails', async () => {
     const { completeOnboarding } = await import('./actions')
     const { createCouple, createInvite } = await import('@/lib/couples')
     const { sendEmail } = await import('@/lib/email/send')
-    const { redirect } = await import('next/navigation')
 
     mockSupabase._queryBuilder.update = vi.fn().mockReturnValue(mockSupabase._queryBuilder)
     mockSupabase._queryBuilder.eq = vi.fn().mockReturnValue({ data: null, error: null })
@@ -242,8 +240,8 @@ describe('completeOnboarding - edge cases', () => {
     ;(sendEmail as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('RESEND_API_KEY not configured'))
 
     const fd = makeFormData({ displayName: 'Jeremy', partnerEmail: 'partner@example.com' })
-    await expect(completeOnboarding({ error: null }, fd)).rejects.toThrow('NEXT_REDIRECT:/dashboard')
+    const result = await completeOnboarding({ error: null }, fd)
 
-    expect(redirect).toHaveBeenCalledWith('/dashboard')
+    expect(result).toEqual({ error: null, success: true, emailSent: false })
   })
 })

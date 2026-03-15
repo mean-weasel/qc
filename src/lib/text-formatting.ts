@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify'
+
 export interface TextFormat {
   bold?: boolean
   italic?: boolean
@@ -139,7 +141,7 @@ export function toHTML(richText: string): string {
     .replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
     .replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
     .replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     .replace(/^>\s+(.*)$/gm, '<blockquote>$1</blockquote>')
     .replace(/\n/g, '<br/>')
 
@@ -151,7 +153,36 @@ export function toHTML(richText: string): string {
   // eslint-disable-next-line security/detect-unsafe-regex -- same pattern as above, bounded .* with non-overlapping groups
   html = html.replace(/(<li>.*<\/li>)(<br\/?>)?/g, '<ol>$1</ol>')
 
-  return html
+  return sanitizeHTML(html)
+}
+
+/**
+ * Sanitize HTML output using DOMPurify to prevent XSS attacks.
+ * Only allows safe tags and attributes, and restricts URLs to http(s) and mailto schemes.
+ */
+export function sanitizeHTML(html: string): string {
+  if (typeof window === 'undefined') return html
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'strong',
+      'em',
+      'u',
+      'del',
+      'h1',
+      'h2',
+      'h3',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+      'a',
+      'p',
+      'br',
+      'span',
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+    ALLOWED_URI_REGEXP: /^(?:https?|mailto):/i,
+  })
 }
 
 /**
@@ -202,7 +233,8 @@ export function validateLength(
 }
 
 /**
- * Text sanitization for security
+ * Text sanitization for security (regex-based, operates on raw text).
+ * For sanitizing HTML output, prefer `sanitizeHTML()` which uses DOMPurify.
  */
 export function sanitizeText(text: string): string {
   return (

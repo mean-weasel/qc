@@ -203,15 +203,29 @@ export function SessionSettingsProvider({ children, coupleId }: SessionSettingsP
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) return
 
-      const { error } = await supabase.from('session_settings_proposals').insert({
-        couple_id: coupleId,
-        proposed_by: userData.user.id,
-        settings: settings as Record<string, unknown>,
-        status: 'pending',
-      })
+      // Check for existing pending proposal to avoid duplicates
+      const { data: existing } = await supabase
+        .from('session_settings_proposals')
+        .select('id')
+        .eq('couple_id', coupleId)
+        .eq('status', 'pending')
+        .maybeSingle()
 
-      if (error) {
-        console.error('Failed to create proposal:', error)
+      if (existing) {
+        // Update existing proposal instead of creating a duplicate
+        const { error } = await supabase
+          .from('session_settings_proposals')
+          .update({ settings: settings as Record<string, unknown> })
+          .eq('id', existing.id)
+        if (error) console.error('Failed to update proposal:', error)
+      } else {
+        const { error } = await supabase.from('session_settings_proposals').insert({
+          couple_id: coupleId,
+          proposed_by: userData.user.id,
+          settings: settings as Record<string, unknown>,
+          status: 'pending',
+        })
+        if (error) console.error('Failed to create proposal:', error)
       }
     },
     [coupleId, supabase],

@@ -73,17 +73,24 @@ function ActionFormFields({
   const [status, setStatus] = useState<LoveActionStatus>(initialStatus)
   const [frequency, setFrequency] = useState<LoveActionFrequency>(initialFrequency)
   const [difficulty, setDifficulty] = useState<LoveActionDifficulty>(initialDifficulty)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(e: React.FormEvent): void {
+  async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault()
-    onSubmit({
-      title,
-      description: description || null,
-      linkedLanguageId: linkedLanguageId || null,
-      status,
-      frequency,
-      difficulty,
-    })
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        title,
+        description: description || null,
+        linkedLanguageId: linkedLanguageId || null,
+        status,
+        frequency,
+        difficulty,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -182,8 +189,8 @@ function ActionFormFields({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!title}>
-          {isEditing ? 'Save Changes' : 'Add Action'}
+        <Button type="submit" disabled={!title || isSubmitting}>
+          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Action'}
         </Button>
       </DialogFooter>
     </form>

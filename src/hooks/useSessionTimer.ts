@@ -19,6 +19,7 @@ interface StoredTimerState {
 
 interface UseSessionTimerOptions {
   durationMinutes: number
+  sessionStartedAt?: string | null
   onTimeUp?: () => void
 }
 
@@ -69,13 +70,22 @@ function clearStorage(): void {
   }
 }
 
-export function useSessionTimer({ durationMinutes, onTimeUp }: UseSessionTimerOptions): UseSessionTimerReturn {
+export function useSessionTimer({
+  durationMinutes,
+  sessionStartedAt,
+  onTimeUp,
+}: UseSessionTimerOptions): UseSessionTimerReturn {
   const totalSeconds = durationMinutes * 60
 
   const [timeRemaining, setTimeRemaining] = useState<number>(() => {
+    // Priority 1: Calculate from server-backed session start time
+    if (sessionStartedAt) {
+      const elapsedFromServer = Math.floor((Date.now() - new Date(sessionStartedAt).getTime()) / 1000)
+      return Math.max(0, totalSeconds - elapsedFromServer)
+    }
+    // Priority 2: Restore from sessionStorage (same-tab refresh)
     const stored = loadFromStorage()
     if (stored) {
-      // If it was running, subtract elapsed time since save
       if (stored.isRunning && !stored.isPaused) {
         const elapsedSinceSave = Math.floor((Date.now() - stored.savedAt) / 1000)
         return Math.max(0, stored.timeRemaining - elapsedSinceSave)

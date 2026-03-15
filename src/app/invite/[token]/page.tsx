@@ -1,9 +1,49 @@
 import { redirect } from 'next/navigation'
 
 import { getUserOrNull } from '@/lib/auth'
+import type { InviteValidationStatus } from '@/lib/couples'
 
 import { validateInvite } from './actions'
 import { InviteAcceptForm } from './invite-accept-form'
+
+function getInviteErrorConfig(
+  reason: InviteValidationStatus,
+  error: string | null,
+): { title: string; message: string; linkHref: string; linkText: string } {
+  if (error) {
+    return {
+      title: 'Invalid Invite',
+      message: error,
+      linkHref: '/login',
+      linkText: 'Go to Login',
+    }
+  }
+
+  switch (reason) {
+    case 'accepted':
+      return {
+        title: 'Invite Already Accepted',
+        message: 'This invite has already been accepted. Go to your dashboard.',
+        linkHref: '/dashboard',
+        linkText: 'Go to Dashboard',
+      }
+    case 'expired':
+      return {
+        title: 'Invite Expired',
+        message: 'This invite has expired. Ask your partner to send a new one.',
+        linkHref: '/login',
+        linkText: 'Go to Login',
+      }
+    case 'not_found':
+    default:
+      return {
+        title: 'Invalid Invite',
+        message: 'This invite link is invalid. Check with your partner.',
+        linkHref: '/login',
+        linkText: 'Go to Login',
+      }
+  }
+}
 
 type Props = {
   params: Promise<{ token: string }>
@@ -12,9 +52,11 @@ type Props = {
 export default async function InvitePage({ params }: Props) {
   const { token } = await params
   const user = await getUserOrNull()
-  const { valid, error } = await validateInvite(token)
+  const { valid, error, reason } = await validateInvite(token)
 
   if (!valid) {
+    const errorConfig = getInviteErrorConfig(reason, error)
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-rose-50 to-orange-50 p-4 dark:from-gray-900 dark:to-gray-800">
         <div className="w-full max-w-md space-y-4 rounded-2xl bg-card p-8 text-center shadow-lg">
@@ -23,13 +65,13 @@ export default async function InvitePage({ params }: Props) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold">Invalid Invite</h1>
-          <p className="text-sm text-muted-foreground">{error ?? 'This invite link is invalid or has expired.'}</p>
+          <h1 className="text-xl font-bold">{errorConfig.title}</h1>
+          <p className="text-sm text-muted-foreground">{errorConfig.message}</p>
           <a
-            href="/login"
+            href={errorConfig.linkHref}
             className="touch-target gradient-primary inline-block rounded-xl px-6 py-3 font-semibold text-white transition-opacity hover:opacity-90"
           >
-            Go to Login
+            {errorConfig.linkText}
           </a>
         </div>
       </div>

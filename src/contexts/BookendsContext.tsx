@@ -132,6 +132,34 @@ function bookEndsReducer(state: BookendsState, action: BookendsAction): Bookends
 
 const BookendsContext = createContext<BookendsContextValue | null>(null)
 
+function getPrepStorageKey(coupleId: string): string {
+  return `qc-prep-topics-${coupleId}`
+}
+
+function loadPrepTopicsFromStorage(coupleId: string): PreparationTopic[] | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = localStorage.getItem(getPrepStorageKey(coupleId))
+    if (!stored) return null
+    return JSON.parse(stored) as PreparationTopic[]
+  } catch {
+    return null
+  }
+}
+
+function savePrepTopicsToStorage(coupleId: string, topics: PreparationTopic[]): void {
+  if (typeof window === 'undefined') return
+  try {
+    if (topics.length === 0) {
+      localStorage.removeItem(getPrepStorageKey(coupleId))
+    } else {
+      localStorage.setItem(getPrepStorageKey(coupleId), JSON.stringify(topics))
+    }
+  } catch {
+    // localStorage unavailable (private browsing) — ignore
+  }
+}
+
 interface BookendsProviderProps {
   children: React.ReactNode
   coupleId: string
@@ -140,6 +168,30 @@ interface BookendsProviderProps {
 
 export function BookendsProvider({ children, coupleId, userId }: BookendsProviderProps): React.ReactNode {
   const [state, dispatch] = useReducer(bookEndsReducer, initialState)
+
+  // Restore preparation topics from localStorage on mount
+  useEffect(() => {
+    const topics = loadPrepTopicsFromStorage(coupleId)
+    if (topics && topics.length > 0) {
+      dispatch({
+        type: 'LOAD_STATE',
+        payload: {
+          preparation: {
+            id: crypto.randomUUID(),
+            myTopics: topics,
+            partnerTopics: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      })
+    }
+  }, [coupleId])
+
+  // Persist preparation topics to localStorage whenever they change
+  useEffect(() => {
+    savePrepTopicsToStorage(coupleId, state.preparation?.myTopics ?? [])
+  }, [coupleId, state.preparation?.myTopics])
 
   // Load mood data from last completed check-in
   useEffect(() => {

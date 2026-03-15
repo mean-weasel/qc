@@ -179,6 +179,12 @@ export function checkInReducer(state: CheckInContextState, action: CheckInAction
     case 'RESTORE_SESSION':
       return { ...state, session: action.payload.session, isLoading: false, error: null }
 
+    case 'SET_ERROR':
+      return { ...state, error: action.payload.error }
+
+    case 'CLEAR_ERROR':
+      return { ...state, error: null }
+
     default:
       return state
   }

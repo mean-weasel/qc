@@ -97,19 +97,27 @@ export async function updateNote(_prev: NoteActionState, formData: FormData): Pr
     return { error: validationError ?? 'Validation failed' }
   }
 
-  const { data, error: updateError } = await supabase
-    .from('notes')
-    .update(input)
-    .eq('id', id)
-    .eq('author_id', user.id)
-    .select()
+  // Optimistic locking: if the client sends the last-known updated_at,
+  // only update if the record hasn't been modified since
+  const lastKnownUpdatedAt = formData.get('updated_at') as string | null
+
+  let query = supabase.from('notes').update(input).eq('id', id).eq('author_id', user.id)
+
+  if (lastKnownUpdatedAt) {
+    query = query.eq('updated_at', lastKnownUpdatedAt)
+  }
+
+  const { data, error: updateError } = await query.select()
 
   if (updateError) {
     return { error: sanitizeDbError(updateError, 'updateNote') }
   }
 
-  // Check if any rows were actually updated (RLS might have blocked it)
+  // No rows updated — either RLS blocked it or a concurrent edit occurred
   if (!data || data.length === 0) {
+    if (lastKnownUpdatedAt) {
+      return { error: 'This note was modified by your partner. Please reload and try again.' }
+    }
     return { error: 'You can only edit notes you created' }
   }
 

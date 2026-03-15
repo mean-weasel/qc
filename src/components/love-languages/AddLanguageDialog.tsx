@@ -168,19 +168,26 @@ function LanguageFormFields({ initialLanguage, onSubmit, onCancel }: LanguageFor
     initialLanguage?.examples && initialLanguage.examples.length > 0 ? initialLanguage.examples : [''],
   )
   const [tags, setTags] = useState<string[]>(initialLanguage?.tags ?? [])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(e: React.FormEvent): void {
+  async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault()
-    onSubmit({
-      title,
-      description: description || null,
-      category,
-      importance,
-      privacy,
-      examples: examples.filter((ex) => ex.trim() !== ''),
-      tags,
-    })
-    onCancel()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        title,
+        description: description || null,
+        category,
+        importance,
+        privacy,
+        examples: examples.filter((ex) => ex.trim() !== ''),
+        tags,
+      })
+      onCancel()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -270,8 +277,8 @@ function LanguageFormFields({ initialLanguage, onSubmit, onCancel }: LanguageFor
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!title}>
-          {initialLanguage ? 'Save Changes' : 'Add Love Language'}
+        <Button type="submit" disabled={!title || isSubmitting}>
+          {isSubmitting ? 'Saving...' : initialLanguage ? 'Save Changes' : 'Add Love Language'}
         </Button>
       </DialogFooter>
     </form>

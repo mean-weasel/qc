@@ -157,9 +157,20 @@ function CelebrationContent(props: {
   onClose?: () => void
   onGoHome?: () => void
   onStartNew?: () => void
+  isCompleting?: boolean
 }): React.ReactNode {
-  const { categories, timeSpent, actionItemsCount, notesCount, moodBefore, moodAfter, onClose, onGoHome, onStartNew } =
-    props
+  const {
+    categories,
+    timeSpent,
+    actionItemsCount,
+    notesCount,
+    moodBefore,
+    moodAfter,
+    onClose,
+    onGoHome,
+    onStartNew,
+    isCompleting,
+  } = props
   const [showStats, setShowStats] = useState(false)
 
   useEffect(() => {
@@ -192,18 +203,19 @@ function CelebrationContent(props: {
         <div className="p-6 space-y-3">
           <div className="flex gap-3">
             {onGoHome && (
-              <Button variant="outline" onClick={onGoHome} className="flex-1 gap-2">
+              <Button variant="outline" onClick={onGoHome} disabled={isCompleting} className="flex-1 gap-2">
                 <Home className="h-4 w-4" />
-                Go Home
+                {isCompleting ? 'Saving...' : 'Go Home'}
               </Button>
             )}
             {onStartNew && (
               <Button
                 onClick={onStartNew}
+                disabled={isCompleting}
                 className="flex-1 gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white"
               >
                 <RefreshCw className="h-4 w-4" />
-                Start Another
+                {isCompleting ? 'Saving...' : 'Start Another'}
               </Button>
             )}
           </div>
@@ -244,6 +256,7 @@ interface CompletionCelebrationProps {
   onClose?: () => void
   onGoHome?: () => void
   onStartNew?: () => void
+  isCompleting?: boolean
   className?: string
 }
 
@@ -258,6 +271,7 @@ export function CompletionCelebration({
   onClose,
   onGoHome,
   onStartNew,
+  isCompleting,
   className,
 }: CompletionCelebrationProps): React.ReactNode {
   return (
@@ -285,6 +299,7 @@ export function CompletionCelebration({
             onClose={onClose}
             onGoHome={onGoHome}
             onStartNew={onStartNew}
+            isCompleting={isCompleting}
           />
         </motion.div>
       )}

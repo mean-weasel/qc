@@ -157,6 +157,8 @@ export async function resendInvite(inviteId: string): Promise<{ data: DbCoupleIn
 
 // --- Admin operations (bypasses RLS) ---
 
+export type InviteValidationStatus = 'valid' | 'accepted' | 'expired' | 'not_found'
+
 export async function getInviteByToken(token: string): Promise<{
   data: DbCoupleInvite | null
   error: string | null
@@ -173,6 +175,29 @@ export async function getInviteByToken(token: string): Promise<{
 
   if (error) return { data: null, error: error.message }
   return { data, error: null }
+}
+
+export async function getInviteStatusByToken(token: string): Promise<{
+  status: InviteValidationStatus
+  invite: DbCoupleInvite | null
+}> {
+  const admin = createAdminClient()
+
+  const { data: invite } = await admin.from('couple_invites').select('*').eq('token', token).single()
+
+  if (!invite) {
+    return { status: 'not_found', invite: null }
+  }
+
+  if (invite.status === 'accepted') {
+    return { status: 'accepted', invite }
+  }
+
+  if (invite.status === 'expired' || new Date(invite.expires_at) <= new Date()) {
+    return { status: 'expired', invite }
+  }
+
+  return { status: 'valid', invite }
 }
 
 export async function acceptInvite(token: string): Promise<{ error: string | null }> {

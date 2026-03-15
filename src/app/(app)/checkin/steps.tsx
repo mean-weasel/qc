@@ -77,7 +77,7 @@ export function CategorySelectionStep(): React.ReactNode {
 }
 
 export function CategoryDiscussionStep(): React.ReactNode {
-  const { completeStep, goToStep, getCurrentCategoryProgress, coupleId } = useCheckInContext()
+  const { session, completeStep, goToStep, getCurrentCategoryProgress, coupleId } = useCheckInContext()
   const { getActiveSettings } = useSessionSettings()
   const settings = getActiveSettings()
   const { categories } = useCategories(coupleId)
@@ -87,7 +87,7 @@ export function CategoryDiscussionStep(): React.ReactNode {
   return (
     <MotionBox variant="page" className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-6">
       <div className="flex items-center justify-center">
-        <SessionTimer durationMinutes={settings.sessionDuration} />
+        <SessionTimer durationMinutes={settings.sessionDuration} sessionStartedAt={session?.startedAt} />
       </div>
 
       <TurnIndicator />
@@ -174,18 +174,25 @@ export function ActionItemsStep(): React.ReactNode {
 export function CompletionStep(): React.ReactNode {
   const router = useRouter()
   const { session, completeCheckIn, actionItems } = useCheckInContext()
+  const [isCompleting, setIsCompleting] = useState(false)
 
   const [timeSpent] = useState(() =>
     session ? Math.round((Date.now() - new Date(session.startedAt).getTime()) / 60000) : 0,
   )
 
-  const handleGoHome = useCallback(() => {
-    completeCheckIn()
-    router.push('/dashboard')
+  const handleGoHome = useCallback(async () => {
+    setIsCompleting(true)
+    const success = await completeCheckIn()
+    if (success) {
+      router.push('/dashboard')
+    }
+    setIsCompleting(false)
   }, [completeCheckIn, router])
 
-  const handleStartNew = useCallback(() => {
-    completeCheckIn()
+  const handleStartNew = useCallback(async () => {
+    setIsCompleting(true)
+    await completeCheckIn()
+    setIsCompleting(false)
   }, [completeCheckIn])
 
   return (
@@ -199,6 +206,7 @@ export function CompletionStep(): React.ReactNode {
       moodAfter={session?.baseCheckIn.moodAfter}
       onGoHome={handleGoHome}
       onStartNew={handleStartNew}
+      isCompleting={isCompleting}
     />
   )
 }
