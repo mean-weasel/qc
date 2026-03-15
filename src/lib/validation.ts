@@ -31,7 +31,7 @@ export const milestoneSchema = z.object({
 export const loveActionSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).nullable().optional(),
-  language_id: z.string().uuid(),
+  language_id: z.string().uuid().nullable(),
   status: z.enum(['suggested', 'planned', 'recurring']).optional(),
   frequency: z.enum(['once', 'weekly', 'monthly', 'surprise']).optional(),
   difficulty: z.enum(['easy', 'moderate', 'challenging']).optional(),

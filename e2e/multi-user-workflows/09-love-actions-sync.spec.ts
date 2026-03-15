@@ -48,6 +48,15 @@ async function aliceCreatesAction(page: Page, title: string): Promise<void> {
   // Fill description
   await page.getByLabel(/description/i).fill('An E2E test action created by Alice')
 
+  // Select a love language (required for validation)
+  const languageSelect = page.locator('button[role="combobox"]').first()
+  if (await languageSelect.isVisible()) {
+    await languageSelect.click()
+    // Pick the first available option
+    const firstOption = page.getByRole('option').first()
+    await firstOption.click()
+  }
+
   // Submit the form (button text is "Add Action" for new actions)
   await page.getByRole('button', { name: /^add action$/i }).click()
 
