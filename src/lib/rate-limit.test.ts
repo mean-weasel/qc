@@ -1,40 +1,60 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { createRateLimiter } from './rate-limit'
+const mockRpc = vi.fn()
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
+    rpc: mockRpc,
+  })),
+}))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('createRateLimiter', () => {
-  afterEach(() => {
-    vi.useRealTimers()
+  it('allows requests when rpc returns true', async () => {
+    const { createRateLimiter } = await import('./rate-limit')
+    mockRpc.mockResolvedValue({ data: true, error: null })
+
+    const limiter = createRateLimiter({ maxRequests: 5, windowSeconds: 60 })
+    const result = await limiter.check('test-key')
+
+    expect(result).toBe(true)
+    expect(mockRpc).toHaveBeenCalledWith('check_rate_limit', {
+      p_key: 'test-key',
+      p_max_requests: 5,
+      p_window_seconds: 60,
+    })
   })
 
-  it('allows requests under the limit', () => {
-    const limiter = createRateLimiter({ maxRequests: 5, windowMs: 60_000 })
-    for (let i = 0; i < 5; i++) {
-      expect(limiter.check('key1')).toBe(true)
-    }
+  it('blocks requests when rpc returns false', async () => {
+    const { createRateLimiter } = await import('./rate-limit')
+    mockRpc.mockResolvedValue({ data: false, error: null })
+
+    const limiter = createRateLimiter({ maxRequests: 3, windowSeconds: 60 })
+    const result = await limiter.check('test-key')
+
+    expect(result).toBe(false)
   })
 
-  it('blocks requests over the limit', () => {
-    const limiter = createRateLimiter({ maxRequests: 3, windowMs: 60_000 })
-    expect(limiter.check('key1')).toBe(true)
-    expect(limiter.check('key1')).toBe(true)
-    expect(limiter.check('key1')).toBe(true)
-    expect(limiter.check('key1')).toBe(false)
+  it('fails open by default when rpc errors', async () => {
+    const { createRateLimiter } = await import('./rate-limit')
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'DB error' } })
+
+    const limiter = createRateLimiter({ maxRequests: 5, windowSeconds: 60 })
+    const result = await limiter.check('test-key')
+
+    expect(result).toBe(true)
   })
 
-  it('resets after window expires', () => {
-    vi.useFakeTimers()
-    const limiter = createRateLimiter({ maxRequests: 1, windowMs: 1000 })
-    expect(limiter.check('key1')).toBe(true)
-    expect(limiter.check('key1')).toBe(false)
-    vi.advanceTimersByTime(1001)
-    expect(limiter.check('key1')).toBe(true)
-  })
+  it('fails closed when configured and rpc errors', async () => {
+    const { createRateLimiter } = await import('./rate-limit')
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'DB error' } })
 
-  it('tracks keys independently', () => {
-    const limiter = createRateLimiter({ maxRequests: 1, windowMs: 60_000 })
-    expect(limiter.check('key1')).toBe(true)
-    expect(limiter.check('key2')).toBe(true)
-    expect(limiter.check('key1')).toBe(false)
+    const limiter = createRateLimiter({ maxRequests: 5, windowSeconds: 60, failClosed: true })
+    const result = await limiter.check('test-key')
+
+    expect(result).toBe(false)
   })
 })
