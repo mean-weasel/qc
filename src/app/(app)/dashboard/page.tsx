@@ -60,7 +60,7 @@ async function fetchDashboardData(coupleId: string, userId: string, supabase: Su
   const [summary, streak, activity] = await Promise.all([
     supabase.rpc('get_dashboard_summary', { p_couple_id: coupleId, p_user_id: userId }),
     getStreakData(coupleId, supabase),
-    getRecentActivity(coupleId, supabase, 20),
+    getRecentActivity(coupleId, userId, supabase, 20),
   ])
 
   if (summary.error) {

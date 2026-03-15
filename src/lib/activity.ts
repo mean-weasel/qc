@@ -9,6 +9,7 @@ export interface ActivityItem {
 
 export async function getRecentActivity(
   coupleId: string,
+  userId: string,
   supabase: SupabaseClient,
   limit = 5,
 ): Promise<ActivityItem[]> {
@@ -24,8 +25,9 @@ export async function getRecentActivity(
 
     supabase
       .from('notes')
-      .select('content, created_at')
+      .select('content, created_at, privacy, author_id')
       .eq('couple_id', coupleId)
+      .or(`privacy.eq.shared,author_id.eq.${userId}`)
       .order('created_at', { ascending: false })
       .limit(3),
 
