@@ -113,6 +113,27 @@ describe('createReminder', () => {
 
     expect(result.error).toBe('Something went wrong. Please try again.')
   })
+
+  it('returns error when couple has reached 50 reminder cap', async () => {
+    const { createReminder } = await import('./actions')
+
+    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+      data: { couple_id: mockCoupleId },
+      error: null,
+    })
+
+    // Mock the count query: select().eq() resolves with count: 50
+    mockSupabase._queryBuilder.select = vi.fn().mockReturnValue(mockSupabase._queryBuilder)
+    mockSupabase._queryBuilder.eq = vi
+      .fn()
+      .mockReturnValueOnce(mockSupabase._queryBuilder)
+      .mockResolvedValueOnce({ count: 50, data: null, error: null })
+
+    const fd = makeFormData(validReminderData)
+    const result = await createReminder({}, fd)
+
+    expect(result.error).toContain('maximum of 50 reminders')
+  })
 })
 
 describe('toggleReminder', () => {

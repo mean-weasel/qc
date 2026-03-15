@@ -33,6 +33,15 @@ export async function createReminder(_prev: ReminderActionState, formData: FormD
     return { error: 'You must be in a couple to create reminders' }
   }
 
+  const { count } = await supabase
+    .from('reminders')
+    .select('*', { count: 'exact', head: true })
+    .eq('couple_id', profile.couple_id)
+
+  if (count !== null && count >= 50) {
+    return { error: 'You\u2019ve reached the maximum of 50 reminders. Delete some to create new ones.' }
+  }
+
   const assignedTo = formData.get('assigned_to')
   const raw = {
     title: formData.get('title'),
