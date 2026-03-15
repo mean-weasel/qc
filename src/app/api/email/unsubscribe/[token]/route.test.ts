@@ -8,6 +8,11 @@ const mockSupabase = createMockSupabaseClient()
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => mockSupabase),
 }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 
 beforeEach(() => {
   vi.clearAllMocks()

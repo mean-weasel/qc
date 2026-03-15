@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createRateLimiter } from '@/lib/rate-limit'
 
-const unsubscribeLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 })
+const unsubscribeLimiter = createRateLimiter({ maxRequests: 10, windowSeconds: 60 })
 
 const RESPONSE_HEADERS: Record<string, string> = {
   'Content-Type': 'text/html',
@@ -20,7 +20,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { token } = await params
   const ip = _request.headers.get('x-forwarded-for') ?? 'unknown'
-  if (!unsubscribeLimiter.check(ip)) {
+  if (!(await unsubscribeLimiter.check(ip))) {
     return new NextResponse('Too many requests', { status: 429 })
   }
 
