@@ -17,6 +17,7 @@
 ### Task 1: Create rate_limits migration
 
 **Files:**
+
 - Create: `supabase/migrations/00027_rate_limits.sql`
 
 - [ ] **Step 1: Create the migration file**
@@ -100,6 +101,7 @@ git commit -m "feat(db): add rate_limits table and check_rate_limit RPC"
 ### Task 2: Rewrite rate-limit.ts to use Supabase
 
 **Files:**
+
 - Modify: `src/lib/rate-limit.ts`
 - Modify: `src/lib/rate-limit.test.ts`
 
@@ -214,6 +216,7 @@ git commit -m "feat: replace in-memory rate limiter with Supabase-backed impleme
 ### Task 3: Update invite actions to use async rate limiter
 
 **Files:**
+
 - Modify: `src/app/invite/[token]/actions.ts`
 - Modify: `src/app/invite/[token]/actions.test.ts`
 
@@ -222,19 +225,25 @@ git commit -m "feat: replace in-memory rate limiter with Supabase-backed impleme
 In `src/app/invite/[token]/actions.ts`:
 
 Change line 14:
+
 ```typescript
 const inviteLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 })
 ```
+
 to:
+
 ```typescript
 const inviteLimiter = createRateLimiter({ maxRequests: 10, windowSeconds: 60, failClosed: true })
 ```
 
 Change line 31:
+
 ```typescript
   if (!inviteLimiter.check(ip)) {
 ```
+
 to:
+
 ```typescript
   if (!(await inviteLimiter.check(ip))) {
 ```
@@ -270,6 +279,7 @@ git commit -m "fix: update invite actions to use async Supabase-backed rate limi
 ### Task 4: Update webhook route to use async rate limiter
 
 **Files:**
+
 - Modify: `src/app/api/email/webhook/route.ts`
 - Modify: `src/app/api/email/webhook/route.test.ts`
 
@@ -278,19 +288,25 @@ git commit -m "fix: update invite actions to use async Supabase-backed rate limi
 In `src/app/api/email/webhook/route.ts`:
 
 Change line 7:
+
 ```typescript
 const webhookLimiter = createRateLimiter({ maxRequests: 100, windowMs: 60_000 })
 ```
+
 to:
+
 ```typescript
 const webhookLimiter = createRateLimiter({ maxRequests: 100, windowSeconds: 60 })
 ```
 
 Change line 22:
+
 ```typescript
   if (!webhookLimiter.check(ip)) {
 ```
+
 to:
+
 ```typescript
   if (!(await webhookLimiter.check(ip))) {
 ```
@@ -324,6 +340,7 @@ git commit -m "fix: update webhook route to use async Supabase-backed rate limit
 ### Task 5: Add rate limiting to invite resend
 
 **Files:**
+
 - Modify: `src/app/(app)/settings/actions/profile.ts`
 - Modify: `src/app/(app)/settings/actions/profile.test.ts` (or `actions-profile.test.ts`)
 
@@ -344,10 +361,10 @@ const resendLimiter = createRateLimiter({ maxRequests: 3, windowSeconds: 3600 })
 In `resendInviteAction()`, after the `if (!profile?.couple_id)` check (after line 59), add:
 
 ```typescript
-  const allowed = await resendLimiter.check(`invite:resend:${profile.couple_id}`)
-  if (!allowed) {
-    return { error: 'Too many invite resends. Please wait before trying again.' }
-  }
+const allowed = await resendLimiter.check(`invite:resend:${profile.couple_id}`)
+if (!allowed) {
+  return { error: 'Too many invite resends. Please wait before trying again.' }
+}
 ```
 
 - [ ] **Step 2: Add rate-limit mock to test file**
@@ -379,6 +396,7 @@ git commit -m "feat: add rate limiting to invite resend (3/hr per couple)"
 ### Task 6: Add rate limiting to request creation
 
 **Files:**
+
 - Modify: `src/app/(app)/requests/actions.ts`
 - Modify: `src/app/(app)/requests/actions.test.ts`
 
@@ -399,10 +417,10 @@ const requestLimiter = createRateLimiter({ maxRequests: 20, windowSeconds: 86400
 In `createRequest()`, after the `if (!profile?.couple_id)` check (after line 33), add:
 
 ```typescript
-  const allowed = await requestLimiter.check(`request:create:${profile.couple_id}`)
-  if (!allowed) {
-    return { error: 'Daily request limit reached. Try again tomorrow.' }
-  }
+const allowed = await requestLimiter.check(`request:create:${profile.couple_id}`)
+if (!allowed) {
+  return { error: 'Daily request limit reached. Try again tomorrow.' }
+}
 ```
 
 - [ ] **Step 2: Add rate-limit mock to test file**
@@ -434,6 +452,7 @@ git commit -m "feat: add rate limiting to request creation (20/day per couple)"
 ### Task 7: Add rate limiting to milestone and check-in creation
 
 **Files:**
+
 - Modify: `src/hooks/useMilestones.ts`
 - Modify: `src/app/(app)/checkin/actions.ts`
 
@@ -448,6 +467,7 @@ Search for the function that inserts into the `check_ins` table. It may be in `s
 - [ ] **Step 2: Add rate limiter to check-in creation**
 
 Add import and limiter:
+
 ```typescript
 import { createRateLimiter } from '@/lib/rate-limit'
 
@@ -455,11 +475,12 @@ const checkinLimiter = createRateLimiter({ maxRequests: 10, windowSeconds: 86400
 ```
 
 Before the check-in insert, add:
+
 ```typescript
-  const allowed = await checkinLimiter.check(`checkin:create:${coupleId}`)
-  if (!allowed) {
-    return { error: 'Daily check-in limit reached. Try again tomorrow.' }
-  }
+const allowed = await checkinLimiter.check(`checkin:create:${coupleId}`)
+if (!allowed) {
+  return { error: 'Daily check-in limit reached. Try again tomorrow.' }
+}
 ```
 
 - [ ] **Step 3: Add rate-limit mock to the corresponding test file**
@@ -510,6 +531,7 @@ Expected: No lint errors.
 ### Task 8: Create resource caps migration
 
 **Files:**
+
 - Create: `supabase/migrations/00028_resource_caps.sql`
 
 - [ ] **Step 1: Create the migration file**
@@ -582,6 +604,7 @@ git commit -m "feat(db): add per-couple resource cap triggers for 6 tables"
 ### Task 9: Add resource cap check to createReminder
 
 **Files:**
+
 - Modify: `src/app/(app)/reminders/actions.ts`
 - Modify: `src/app/(app)/reminders/actions.test.ts`
 
@@ -590,25 +613,25 @@ git commit -m "feat(db): add per-couple resource cap triggers for 6 tables"
 In `src/app/(app)/reminders/actions.test.ts`, add this test inside the `createReminder` describe block:
 
 ```typescript
-  it('rejects when couple has reached reminder limit', async () => {
-    const { createReminder } = await import('./actions')
+it('rejects when couple has reached reminder limit', async () => {
+  const { createReminder } = await import('./actions')
 
-    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
-      data: { couple_id: mockCoupleId },
-      error: null,
-    })
-
-    // Mock the count query to return 50 (at limit)
-    mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
-    mockSupabase._queryBuilder.eq.mockReturnValueOnce({
-      ...mockSupabase._queryBuilder,
-      then: (resolve: (value: { count: number }) => void) => resolve({ count: 50 }),
-    })
-
-    const fd = makeFormData(validReminderData)
-    const result = await createReminder({}, fd)
-    expect(result.error).toContain('maximum of 50 reminders')
+  mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+    data: { couple_id: mockCoupleId },
+    error: null,
   })
+
+  // Mock the count query to return 50 (at limit)
+  mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
+  mockSupabase._queryBuilder.eq.mockReturnValueOnce({
+    ...mockSupabase._queryBuilder,
+    then: (resolve: (value: { count: number }) => void) => resolve({ count: 50 }),
+  })
+
+  const fd = makeFormData(validReminderData)
+  const result = await createReminder({}, fd)
+  expect(result.error).toContain('maximum of 50 reminders')
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -621,14 +644,14 @@ Expected: FAIL — createReminder doesn't check count yet.
 In `src/app/(app)/reminders/actions.ts`, inside `createReminder()`, after the `if (!profile?.couple_id)` check (after line 34), add:
 
 ```typescript
-  const { count } = await supabase
-    .from('reminders')
-    .select('*', { count: 'exact', head: true })
-    .eq('couple_id', profile.couple_id)
+const { count } = await supabase
+  .from('reminders')
+  .select('*', { count: 'exact', head: true })
+  .eq('couple_id', profile.couple_id)
 
-  if (count !== null && count >= 50) {
-    return { error: 'You\u2019ve reached the maximum of 50 reminders. Delete some to create new ones.' }
-  }
+if (count !== null && count >= 50) {
+  return { error: 'You\u2019ve reached the maximum of 50 reminders. Delete some to create new ones.' }
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -648,6 +671,7 @@ git commit -m "feat: add 50-reminder cap check in createReminder"
 ### Task 10: Add resource cap check to createNote
 
 **Files:**
+
 - Modify: `src/app/(app)/notes/actions.ts`
 - Modify: `src/app/(app)/notes/actions.test.ts`
 
@@ -656,25 +680,25 @@ git commit -m "feat: add 50-reminder cap check in createReminder"
 In `src/app/(app)/notes/actions.test.ts`, add a test for the limit:
 
 ```typescript
-  it('rejects when couple has reached note limit', async () => {
-    const { createNote } = await import('./actions')
+it('rejects when couple has reached note limit', async () => {
+  const { createNote } = await import('./actions')
 
-    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
-      data: { couple_id: mockCoupleId },
-      error: null,
-    })
-
-    // Mock the count query to return 1000 (at limit)
-    mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
-    mockSupabase._queryBuilder.eq.mockReturnValueOnce({
-      ...mockSupabase._queryBuilder,
-      then: (resolve: (value: { count: number }) => void) => resolve({ count: 1000 }),
-    })
-
-    const fd = makeFormData({ content: 'test', privacy: 'shared' })
-    const result = await createNote({ error: null }, fd)
-    expect(result.error).toContain('maximum of 1,000 notes')
+  mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+    data: { couple_id: mockCoupleId },
+    error: null,
   })
+
+  // Mock the count query to return 1000 (at limit)
+  mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
+  mockSupabase._queryBuilder.eq.mockReturnValueOnce({
+    ...mockSupabase._queryBuilder,
+    then: (resolve: (value: { count: number }) => void) => resolve({ count: 1000 }),
+  })
+
+  const fd = makeFormData({ content: 'test', privacy: 'shared' })
+  const result = await createNote({ error: null }, fd)
+  expect(result.error).toContain('maximum of 1,000 notes')
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -687,14 +711,14 @@ Expected: FAIL.
 In `src/app/(app)/notes/actions.ts`, inside `createNote()`, after `if (!profile?.couple_id)` (after line 59), add:
 
 ```typescript
-  const { count } = await supabase
-    .from('notes')
-    .select('*', { count: 'exact', head: true })
-    .eq('couple_id', profile.couple_id)
+const { count } = await supabase
+  .from('notes')
+  .select('*', { count: 'exact', head: true })
+  .eq('couple_id', profile.couple_id)
 
-  if (count !== null && count >= 1000) {
-    return { error: 'You\u2019ve reached the maximum of 1,000 notes. Delete some to create new ones.' }
-  }
+if (count !== null && count >= 1000) {
+  return { error: 'You\u2019ve reached the maximum of 1,000 notes. Delete some to create new ones.' }
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -714,6 +738,7 @@ git commit -m "feat: add 1000-note cap check in createNote"
 ### Task 11: Add resource cap check to createRequest
 
 **Files:**
+
 - Modify: `src/app/(app)/requests/actions.ts` (already modified in Task 6 for rate limiting)
 - Modify: `src/app/(app)/requests/actions.test.ts`
 
@@ -722,25 +747,25 @@ git commit -m "feat: add 1000-note cap check in createNote"
 Add test to `src/app/(app)/requests/actions.test.ts`:
 
 ```typescript
-  it('rejects when couple has reached request limit', async () => {
-    const { createRequest } = await import('./actions')
+it('rejects when couple has reached request limit', async () => {
+  const { createRequest } = await import('./actions')
 
-    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
-      data: { couple_id: mockCoupleId },
-      error: null,
-    })
-
-    // Mock count query returning 100
-    mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
-    mockSupabase._queryBuilder.eq.mockReturnValueOnce({
-      ...mockSupabase._queryBuilder,
-      then: (resolve: (value: { count: number }) => void) => resolve({ count: 100 }),
-    })
-
-    const fd = makeFormData(validRequestData)
-    const result = await createRequest({}, fd)
-    expect(result.error).toContain('maximum of 100 requests')
+  mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+    data: { couple_id: mockCoupleId },
+    error: null,
   })
+
+  // Mock count query returning 100
+  mockSupabase._queryBuilder.select.mockReturnValueOnce(mockSupabase._queryBuilder)
+  mockSupabase._queryBuilder.eq.mockReturnValueOnce({
+    ...mockSupabase._queryBuilder,
+    then: (resolve: (value: { count: number }) => void) => resolve({ count: 100 }),
+  })
+
+  const fd = makeFormData(validRequestData)
+  const result = await createRequest({}, fd)
+  expect(result.error).toContain('maximum of 100 requests')
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -753,14 +778,14 @@ Expected: FAIL.
 In `src/app/(app)/requests/actions.ts`, inside `createRequest()`, after the rate limit check added in Task 6, add:
 
 ```typescript
-  const { count } = await supabase
-    .from('requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('couple_id', profile.couple_id)
+const { count } = await supabase
+  .from('requests')
+  .select('*', { count: 'exact', head: true })
+  .eq('couple_id', profile.couple_id)
 
-  if (count !== null && count >= 100) {
-    return { error: 'You\u2019ve reached the maximum of 100 requests. Delete some to create new ones.' }
-  }
+if (count !== null && count >= 100) {
+  return { error: 'You\u2019ve reached the maximum of 100 requests. Delete some to create new ones.' }
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -780,6 +805,7 @@ git commit -m "feat: add 100-request cap check in createRequest"
 ### Task 12: Add resource cap check to milestone creation
 
 **Files:**
+
 - Modify: `src/hooks/useMilestones.ts`
 - Modify: `src/hooks/useMilestones.test.ts`
 
@@ -790,15 +816,15 @@ Note: `useMilestones.ts` is a client-side hook. The DB trigger (migration 00028)
 In `src/hooks/useMilestones.ts`, inside the `createMilestone` callback (around line 142-178), before the `.insert()` call, add a count check:
 
 ```typescript
-      // Check resource cap before insert
-      const { count: milestoneCount } = await supabase
-        .from('milestones')
-        .select('*', { count: 'exact', head: true })
-        .eq('couple_id', coupleId)
+// Check resource cap before insert
+const { count: milestoneCount } = await supabase
+  .from('milestones')
+  .select('*', { count: 'exact', head: true })
+  .eq('couple_id', coupleId)
 
-      if (milestoneCount !== null && milestoneCount >= 200) {
-        throw new Error('You\u2019ve reached the maximum of 200 milestones. Delete some to create new ones.')
-      }
+if (milestoneCount !== null && milestoneCount >= 200) {
+  throw new Error('You\u2019ve reached the maximum of 200 milestones. Delete some to create new ones.')
+}
 ```
 
 Add this after the `if (!coupleId) throw new Error('No couple linked')` check (line 143) and before the `setError(null)` call (line 145).
@@ -836,6 +862,7 @@ Expected: No type errors.
 ### Task 13: Add limit to cron reminder query + rate limit cleanup
 
 **Files:**
+
 - Modify: `src/app/api/cron/send-reminders/route.ts`
 - Modify: `src/app/api/cron/send-reminders/route.test.ts`
 
@@ -844,6 +871,7 @@ Expected: No type errors.
 In `src/app/api/cron/send-reminders/route.ts`:
 
 Add `.limit(200)` after `.lte('scheduled_for', now)` (line 32):
+
 ```typescript
     .lte('scheduled_for', now)
     .limit(200)
@@ -852,16 +880,16 @@ Add `.limit(200)` after `.lte('scheduled_for', now)` (line 32):
 After the response JSON block at the end (before `return`), add a log warning if we hit the limit:
 
 ```typescript
-  if (reminders.length >= 200) {
-    console.warn('[cron/send-reminders] Hit 200-reminder limit — more may be pending')
-  }
+if (reminders.length >= 200) {
+  console.warn('[cron/send-reminders] Hit 200-reminder limit — more may be pending')
+}
 ```
 
 Add rate limit cleanup at the end of the function, before the return statement:
 
 ```typescript
-  // Clean up expired rate limit entries
-  await supabase.rpc('cleanup_expired_rate_limits')
+// Clean up expired rate limit entries
+await supabase.rpc('cleanup_expired_rate_limits')
 ```
 
 - [ ] **Step 2: Run tests**
@@ -881,6 +909,7 @@ git commit -m "fix: cap cron reminder query at 200 and add rate limit cleanup"
 ### Task 15: Add per-couple daily email cap
 
 **Files:**
+
 - Modify: `src/lib/email/send.ts`
 - Modify: `src/lib/email/send.test.ts`
 
@@ -914,12 +943,12 @@ interface SendEmailParams {
 In the `sendEmail` function body, before the `getResend().emails.send()` call, add:
 
 ```typescript
-  if (coupleId) {
-    const allowed = await emailDailyLimiter.check(`email:daily:${coupleId}`)
-    if (!allowed) {
-      return { data: null, error: { message: 'Daily email limit reached for this couple' } }
-    }
+if (coupleId) {
+  const allowed = await emailDailyLimiter.check(`email:daily:${coupleId}`)
+  if (!allowed) {
+    return { data: null, error: { message: 'Daily email limit reached for this couple' } }
   }
+}
 ```
 
 - [ ] **Step 2: Add rate-limit mock to test file**
@@ -951,6 +980,7 @@ git commit -m "feat: add per-couple daily email cap (50/day) in sendEmail"
 ### Task 16: Add limit to streak query
 
 **Files:**
+
 - Modify: `src/lib/streaks.ts`
 - Modify: `src/lib/streaks.test.ts`
 
@@ -991,6 +1021,7 @@ Expected: All tests PASS.
 ### Task 16: Create storage hardening migration
 
 **Files:**
+
 - Create: `supabase/migrations/00029_storage_hardening.sql`
 
 - [ ] **Step 1: Create the migration file**
@@ -1036,6 +1067,7 @@ git commit -m "feat(db): restrict photo uploads to 10MB and couple-scoped folder
 ### Task 17: Create missing RLS policies migration
 
 **Files:**
+
 - Create: `supabase/migrations/00030_missing_delete_policies.sql`
 
 - [ ] **Step 1: Create the migration file**
@@ -1069,6 +1101,7 @@ git commit -m "feat(db): add missing DELETE policies for couple_invites and prop
 ### Task 18: Add privacy filter to activity feed
 
 **Files:**
+
 - Modify: `src/lib/activity.ts`
 - Modify: `src/lib/activity.test.ts`
 - Modify: `src/app/(app)/dashboard/page.tsx`
@@ -1078,11 +1111,11 @@ git commit -m "feat(db): add missing DELETE policies for couple_invites and prop
 In `src/lib/activity.test.ts`, add a test that verifies the function signature includes `userId`:
 
 ```typescript
-  it('accepts userId parameter for privacy filtering', async () => {
-    const { getRecentActivity } = await import('./activity')
-    // Verify the function accepts 4 parameters (coupleId, userId, supabase, limit)
-    expect(getRecentActivity.length).toBeGreaterThanOrEqual(2)
-  })
+it('accepts userId parameter for privacy filtering', async () => {
+  const { getRecentActivity } = await import('./activity')
+  // Verify the function accepts 4 parameters (coupleId, userId, supabase, limit)
+  expect(getRecentActivity.length).toBeGreaterThanOrEqual(2)
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1095,6 +1128,7 @@ Expected: FAIL or PASS depending on how the test runner handles arity checks. If
 In `src/lib/activity.ts`:
 
 Change the function signature (line 10-13) from:
+
 ```typescript
 export async function getRecentActivity(
   coupleId: string,
@@ -1102,7 +1136,9 @@ export async function getRecentActivity(
   limit = 5,
 ): Promise<ActivityItem[]> {
 ```
+
 to:
+
 ```typescript
 export async function getRecentActivity(
   coupleId: string,
@@ -1113,6 +1149,7 @@ export async function getRecentActivity(
 ```
 
 Change the notes query (lines 25-30) from:
+
 ```typescript
     supabase
       .from('notes')
@@ -1121,7 +1158,9 @@ Change the notes query (lines 25-30) from:
       .order('created_at', { ascending: false })
       .limit(3),
 ```
+
 to:
+
 ```typescript
     supabase
       .from('notes')
@@ -1135,10 +1174,13 @@ to:
 - [ ] **Step 4: Update the dashboard caller**
 
 In `src/app/(app)/dashboard/page.tsx`, change line 63 from:
+
 ```typescript
     getRecentActivity(coupleId, supabase, 20),
 ```
+
 to:
+
 ```typescript
     getRecentActivity(coupleId, userId, supabase, 20),
 ```
@@ -1148,6 +1190,7 @@ to:
 In `src/lib/activity.test.ts`:
 
 1. Add a `mockUserId` constant alongside other mock IDs:
+
 ```typescript
 const mockUserId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 ```
@@ -1155,6 +1198,7 @@ const mockUserId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 2. The mock Supabase client from `@/test/mocks/supabase.ts` already includes `.or()` as a chainable method (it's in the `methods` array). No mock updates needed for the `.or()` call.
 
 3. Update **every** call to `getRecentActivity` to include `mockUserId` as the second argument:
+
 ```typescript
 // Before:
 getRecentActivity(mockCoupleId, mockSupabase)
@@ -1229,6 +1273,7 @@ Expected: Clean series of commits, one per task.
 - [ ] **Step 2: Document the changes**
 
 Verify the following migrations are present:
+
 - `00027_rate_limits.sql` — rate_limits table + check_rate_limit RPC
 - `00028_resource_caps.sql` — per-couple resource cap triggers
 - `00029_storage_hardening.sql` — 10MB photo limit + couple-scoped upload policy
@@ -1240,15 +1285,16 @@ Verify the following migrations are present:
 
 These work streams can be executed by parallel agents:
 
-| Work Stream | Tasks | Dependencies | Can Parallel With |
-|-------------|-------|-------------|-------------------|
-| A: Rate Limiter | 1-8 | None | B, D, E |
-| B: Resource Caps | 9-13 | None | A, D, E |
-| C: Cron & Email | 14-17 | A (uses rate limiter for email cap) | D, E |
-| D: Storage | 18 | None | A, B, C, E |
-| E: Policies | 19-20 | None | A, B, C, D |
+| Work Stream      | Tasks | Dependencies                        | Can Parallel With |
+| ---------------- | ----- | ----------------------------------- | ----------------- |
+| A: Rate Limiter  | 1-8   | None                                | B, D, E           |
+| B: Resource Caps | 9-13  | None                                | A, D, E           |
+| C: Cron & Email  | 14-17 | A (uses rate limiter for email cap) | D, E              |
+| D: Storage       | 18    | None                                | A, B, C, E        |
+| E: Policies      | 19-20 | None                                | A, B, C, D        |
 
 **Recommended groupings for 3 parallel agents:**
+
 - Agent 1: Work Stream A (Tasks 1-8), then C (Tasks 14-17)
 - Agent 2: Work Stream B (Tasks 9-13)
 - Agent 3: Work Stream D (Task 18) + E (Tasks 19-20)

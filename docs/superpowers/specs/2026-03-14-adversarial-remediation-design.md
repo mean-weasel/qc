@@ -14,16 +14,17 @@ The adversarial audit identified 14 actionable findings (3 Critical, 5 High, 6 M
 4. **Missing RLS DELETE policies** on 2 tables
 
 Two findings from the original audit were false positives:
+
 - `session_settings` UPDATE policy exists (migration 00008 line 22)
 - Server-side file size limit exists (50MiB in `supabase/config.toml`)
 
 ## Design Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Rate limiting backend | Supabase-backed | No new infrastructure, stays within existing stack |
-| Resource cap enforcement | DB triggers + app checks | Hard DB limits for safety, app checks for friendly UX |
-| Storage size limit | Lower bucket limit via migration | Server-side enforcement, client validation stays as UX |
+| Decision                 | Choice                           | Rationale                                              |
+| ------------------------ | -------------------------------- | ------------------------------------------------------ |
+| Rate limiting backend    | Supabase-backed                  | No new infrastructure, stays within existing stack     |
+| Resource cap enforcement | DB triggers + app checks         | Hard DB limits for safety, app checks for friendly UX  |
+| Storage size limit       | Lower bucket limit via migration | Server-side enforcement, client validation stays as UX |
 
 ## Architecture
 
@@ -125,16 +126,17 @@ export function createRateLimiter(config: RateLimiterConfig) {
 
 **Rate limit configurations:**
 
-| Action | Key Pattern | Max Requests | Window |
-|--------|------------|-------------|--------|
-| Invite validation | `invite:validate:{ip}` | 10 | 60s |
-| Invite resend | `invite:resend:{coupleId}` | 3 | 3600s (1hr) |
-| Email webhook | `webhook:{ip}` | 100 | 60s |
-| Request creation | `request:create:{coupleId}` | 20 | 86400s (1day) |
-| Milestone creation | `milestone:create:{coupleId}` | 10 | 86400s (1day) |
-| Check-in creation | `checkin:create:{coupleId}` | 10 | 86400s (1day) |
+| Action             | Key Pattern                   | Max Requests | Window        |
+| ------------------ | ----------------------------- | ------------ | ------------- |
+| Invite validation  | `invite:validate:{ip}`        | 10           | 60s           |
+| Invite resend      | `invite:resend:{coupleId}`    | 3            | 3600s (1hr)   |
+| Email webhook      | `webhook:{ip}`                | 100          | 60s           |
+| Request creation   | `request:create:{coupleId}`   | 20           | 86400s (1day) |
+| Milestone creation | `milestone:create:{coupleId}` | 10           | 86400s (1day) |
+| Check-in creation  | `checkin:create:{coupleId}`   | 10           | 86400s (1day) |
 
 **Callers to update (all existing sync `check()` calls must become `await check()`):**
+
 - `src/app/invite/[token]/actions.ts` — `validateInvite()`: change `if (!inviteLimiter.check(ip))` to `if (!(await inviteLimiter.check(ip)))`. Config: `failClosed: true`.
 - `src/app/(app)/settings/actions/profile.ts` — add new rate limit to `resendInviteAction()` (3/hr per couple)
 - `src/app/api/email/webhook/route.ts` — change `if (!webhookLimiter.check(ip))` to `if (!(await webhookLimiter.check(ip)))`
@@ -213,20 +215,22 @@ if (count !== null && count >= 50) {
 
 **Resource limits:**
 
-| Table | Max per Couple | Rationale |
-|-------|---------------|-----------|
-| `reminders` | 50 | Directly feeds email cron — most critical cap |
-| `notes` | 1,000 | Generous for daily notes over 3 years |
-| `milestones` | 200 | ~4/week for a year |
-| `requests` | 100 | Active requests, can delete completed ones |
-| `action_items` | 500 | Accumulated from check-ins |
-| `love_actions` | 500 | Love language actions per couple |
+| Table          | Max per Couple | Rationale                                     |
+| -------------- | -------------- | --------------------------------------------- |
+| `reminders`    | 50             | Directly feeds email cron — most critical cap |
+| `notes`        | 1,000          | Generous for daily notes over 3 years         |
+| `milestones`   | 200            | ~4/week for a year                            |
+| `requests`     | 100            | Active requests, can delete completed ones    |
+| `action_items` | 500            | Accumulated from check-ins                    |
+| `love_actions` | 500            | Love language actions per couple              |
 
 **Not capped (intentional):**
+
 - `check_ins` — bounded by daily rate limit (10/day) in Work Stream A. Historical records are valuable and accumulate slowly.
 - `love_languages` — naturally limited (~5 per person, unlikely to exceed dozens)
 
 **Files to modify:**
+
 - `src/app/(app)/reminders/actions.ts` — add count check in `createReminder()`
 - `src/app/(app)/notes/actions.ts` — add count check in `createNote()`
 - `src/app/(app)/requests/actions.ts` — add count check in `createRequest()`
@@ -237,15 +241,18 @@ if (count !== null && count >= 50) {
 **Goal:** Bound the cron job's email output and fix unbounded queries.
 
 **Changes to `src/app/api/cron/send-reminders/route.ts`:**
+
 1. Add `.limit(200)` to reminder query (line 27-32)
 2. Log warning if results hit the limit (indicates more pending)
 3. Call `cleanup_expired_rate_limits()` at end of cron run
 
 **Changes to `src/lib/streaks.ts`:**
+
 1. Add `.limit(365)` to the query in `getStreakData()` function
 2. Streak calculation only needs ~52 weeks of data, 365 rows is more than sufficient
 
 **Changes to `src/lib/email/send.ts`:**
+
 1. Add per-couple daily email cap check using the rate limiter:
    - Key: `email:daily:{coupleId}`, max: 50, window: 86400s
    - Check before sending in `sendEmail()` — skip if cap exceeded
@@ -277,6 +284,7 @@ CREATE POLICY "Couple members can upload milestone photos" ON storage.objects
 ```
 
 This ensures:
+
 1. Server-side 10MB limit (can't be bypassed like client-side)
 2. Users can only upload to their own couple's folder
 
@@ -330,10 +338,10 @@ supabase
 
 ## Files Changed Summary
 
-| Work Stream | New Files | Modified Files | New Migrations |
-|-------------|-----------|---------------|---------------|
-| A: Rate Limiter | 0 | `rate-limit.ts`, `invite/actions.ts`, `profile.ts`, `webhook/route.ts`, `requests/actions.ts` | 00027 |
-| B: Resource Caps | 0 | `reminders/actions.ts`, `notes/actions.ts`, `requests/actions.ts`, `useMilestones.ts` | 00028 |
-| C: Cron & Email | 0 | `send-reminders/route.ts`, `streaks.ts`, `email/send.ts` | 0 |
-| D: Storage | 0 | 0 | 00029 |
-| E: Policies | 0 | `activity.ts`, `dashboard/page.tsx` (thread userId) | 00030 |
+| Work Stream      | New Files | Modified Files                                                                                | New Migrations |
+| ---------------- | --------- | --------------------------------------------------------------------------------------------- | -------------- |
+| A: Rate Limiter  | 0         | `rate-limit.ts`, `invite/actions.ts`, `profile.ts`, `webhook/route.ts`, `requests/actions.ts` | 00027          |
+| B: Resource Caps | 0         | `reminders/actions.ts`, `notes/actions.ts`, `requests/actions.ts`, `useMilestones.ts`         | 00028          |
+| C: Cron & Email  | 0         | `send-reminders/route.ts`, `streaks.ts`, `email/send.ts`                                      | 0              |
+| D: Storage       | 0         | 0                                                                                             | 00029          |
+| E: Policies      | 0         | `activity.ts`, `dashboard/page.tsx` (thread userId)                                           | 00030          |

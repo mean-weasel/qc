@@ -11,7 +11,7 @@ import { createRateLimiter } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { validate } from '@/lib/validation'
 
-const inviteLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 })
+const inviteLimiter = createRateLimiter({ maxRequests: 10, windowSeconds: 60, failClosed: true })
 
 const tokenSchema = z.object({
   token: z.string().uuid('Invalid invite token'),
@@ -29,7 +29,7 @@ export async function validateInvite(token: string): Promise<{
 }> {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') ?? 'unknown'
-  if (!inviteLimiter.check(ip)) {
+  if (!(await inviteLimiter.check(ip))) {
     return {
       valid: false,
       inviterEmail: null,
