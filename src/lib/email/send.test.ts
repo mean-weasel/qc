@@ -20,6 +20,12 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => mockSupabase),
 }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
+
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -63,6 +69,22 @@ describe('sendEmail', () => {
     })
 
     expect(result.error).toEqual({ message: 'Resend API error' })
+  })
+
+  it('sends email when coupleId provided and under limit', async () => {
+    const { sendEmail } = await import('./send')
+
+    mockSend.mockResolvedValueOnce({ data: { id: 'email-2' }, error: null })
+
+    const result = await sendEmail({
+      to: 'test@example.com',
+      subject: 'Test with couple',
+      react: mockReactElement,
+      coupleId: 'couple-123',
+    })
+
+    expect(result).toEqual({ data: { id: 'email-2' }, error: null })
+    expect(mockSend).toHaveBeenCalledTimes(1)
   })
 })
 
