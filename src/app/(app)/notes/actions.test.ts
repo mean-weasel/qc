@@ -89,6 +89,27 @@ describe('createNote', () => {
 
     expect(result.error).toBe('Something went wrong. Please try again.')
   })
+
+  it('returns error when couple has reached 1000 note cap', async () => {
+    const { createNote } = await import('./actions')
+
+    mockSupabase._queryBuilder.single.mockResolvedValueOnce({
+      data: { couple_id: mockCoupleId },
+      error: null,
+    })
+
+    // Mock the count query: select().eq() resolves with count: 1000
+    mockSupabase._queryBuilder.select = vi.fn().mockReturnValue(mockSupabase._queryBuilder)
+    mockSupabase._queryBuilder.eq = vi
+      .fn()
+      .mockReturnValueOnce(mockSupabase._queryBuilder)
+      .mockResolvedValueOnce({ count: 1000, data: null, error: null })
+
+    const fd = makeFormData({ content: 'Hi', privacy: 'shared', tags: '[]' })
+    const result = await createNote({ error: null }, fd)
+
+    expect(result.error).toContain('maximum of 1,000 notes')
+  })
 })
 
 describe('updateNote', () => {

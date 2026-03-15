@@ -58,6 +58,15 @@ export async function createNote(_prev: NoteActionState, formData: FormData): Pr
     return { error: 'You must be in a couple to create notes.' }
   }
 
+  const { count: noteCount } = await supabase
+    .from('notes')
+    .select('*', { count: 'exact', head: true })
+    .eq('couple_id', profile.couple_id)
+
+  if (noteCount !== null && noteCount >= 1000) {
+    return { error: 'You\u2019ve reached the maximum of 1,000 notes. Delete some to create new ones.' }
+  }
+
   const { error: insertError } = await supabase.from('notes').insert({
     couple_id: profile.couple_id,
     author_id: user.id,
