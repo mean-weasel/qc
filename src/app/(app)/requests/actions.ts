@@ -7,7 +7,10 @@ import { requireAuth } from '@/lib/auth'
 import { sendEmail, shouldSendEmail } from '@/lib/email/send'
 import { sanitizeDbError } from '@/lib/utils'
 import { RequestNotificationEmail } from '@/lib/email/templates/request-notification'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { validate } from '@/lib/validation'
+
+const requestLimiter = createRateLimiter({ maxRequests: 20, windowSeconds: 86400 })
 
 const requestSchema = z.object({
   requested_for: z.string().uuid('Invalid partner ID'),
@@ -30,6 +33,11 @@ export async function createRequest(_prev: RequestActionState, formData: FormDat
 
   if (!profile?.couple_id) {
     return { error: 'You must be in a couple to create requests' }
+  }
+
+  const allowed = await requestLimiter.check(`request:create:${profile.couple_id}`)
+  if (!allowed) {
+    return { error: 'Too many requests. Please try again later.' }
   }
 
   const raw = {

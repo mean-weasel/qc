@@ -10,8 +10,11 @@ import { sanitizeDbError } from '@/lib/utils'
 import { exportUserData as exportData, type UserData } from '@/lib/data-export'
 import { sendEmail, shouldSendEmail } from '@/lib/email/send'
 import { InviteEmail } from '@/lib/email/templates/invite'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validate } from '@/lib/validation'
+
+const resendLimiter = createRateLimiter({ maxRequests: 3, windowSeconds: 3600 })
 
 const profileSchema = z.object({
   display_name: z.string().min(1, 'Name is required').max(100),
@@ -61,6 +64,11 @@ export async function resendInviteAction(inviteId: string): Promise<{ error?: st
   const { data: invite } = await supabase.from('couple_invites').select('couple_id').eq('id', inviteId).single()
   if (!invite || invite.couple_id !== profile.couple_id) {
     return { error: 'Invite not found' }
+  }
+
+  const allowed = await resendLimiter.check(`invite:resend:${profile.couple_id}`)
+  if (!allowed) {
+    return { error: 'Too many requests. Please try again later.' }
   }
 
   const result = await resendInvite(inviteId)

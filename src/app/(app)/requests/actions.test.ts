@@ -12,6 +12,11 @@ let mockSupabase: ReturnType<typeof createMockSupabaseClient>
 vi.mock('@/lib/auth', () => ({
   requireAuth: vi.fn(),
 }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn(() => ({
+    check: vi.fn().mockResolvedValue(true),
+  })),
+}))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 beforeEach(async () => {
