@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { getConsentStatus, setConsentStatus, clearConsentStatus, type ConsentStatus } from './cookie-consent'
+import { getConsentStatus, setConsentStatus, clearConsentStatus } from './cookie-consent'
 
 describe('cookie-consent', () => {
   beforeEach(() => {
