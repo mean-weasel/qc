@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { getConsentStatus, setConsentStatus, type ConsentStatus } from '@/lib/cookie-consent'
+import { trackCookieConsentResponded } from '@/lib/analytics'
 
 function subscribeToConsent(callback: () => void): () => void {
   const handler = (): void => callback()
@@ -36,13 +37,19 @@ export function CookieConsent(): React.ReactNode {
         </p>
         <div className="flex gap-2">
           <button
-            onClick={() => setConsentStatus('declined')}
+            onClick={() => {
+              setConsentStatus('declined')
+              trackCookieConsentResponded(false)
+            }}
             className="rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             Decline
           </button>
           <button
-            onClick={() => setConsentStatus('accepted')}
+            onClick={() => {
+              setConsentStatus('accepted')
+              trackCookieConsentResponded(true)
+            }}
             className="rounded-md bg-[hsl(var(--primary))] px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             Accept
