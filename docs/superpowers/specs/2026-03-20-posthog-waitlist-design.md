@@ -54,6 +54,15 @@ Minimal banner fixed to the bottom of the viewport:
 
 `PostHogWrapper` added to `src/app/providers.tsx` wrapping children inside the existing provider tree. `CookieConsent` renders inside the wrapper.
 
+### CSP Update (`src/lib/supabase/middleware-utils.ts`)
+
+The existing Content Security Policy must be updated to allow PostHog requests. Add to:
+
+- `connect-src`: `https://us.i.posthog.com` (or the configured `NEXT_PUBLIC_POSTHOG_HOST`)
+- `script-src`: `https://us.i.posthog.com` (for the PostHog JS bundle loaded dynamically)
+
+Without this, browser CSP enforcement will silently block PostHog network requests.
+
 ## 2. Analytics Events
 
 ### Analytics utility (`src/lib/analytics.ts`)
@@ -75,9 +84,18 @@ Core funnel: `landing_viewed` → `cta_clicked` → `waitlist_form_viewed` → `
 
 Server-side events (`waitlist_signup_completed`, `waitlist_signup_failed`) use `posthog-node` since server actions don't have access to the client-side PostHog instance.
 
+### Server-side analytics (`src/lib/analytics-server.ts`)
+
+Separate file for server-side PostHog via `posthog-node`:
+
+- Lazy-initialized `PostHog` client singleton (reads `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST`)
+- Exports `serverTrackWaitlistSignupCompleted(email, source)` and `serverTrackWaitlistSignupFailed(email, reason)`
+- Uses `posthog.capture()` with `distinctId` set to the email (since waitlist users have no user ID)
+- Calls `posthog.shutdown()` is NOT needed per-request — the singleton flushes automatically
+
 ## 3. Waitlist Database + Server Action
 
-### Supabase migration (`supabase/migrations/00009_add_waitlist.sql`)
+### Supabase migration (`supabase/migrations/00031_add_waitlist.sql`)
 
 ```sql
 CREATE TABLE public.waitlist (
@@ -94,7 +112,9 @@ ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
 -- This table is accessed exclusively via server actions.
 ```
 
-### Server action (`src/actions/waitlist.ts`)
+### Server action (`src/app/(auth)/signup/actions.ts`)
+
+Colocated with the signup page following QC's established pattern (e.g., `onboarding/actions.ts`, `settings/actions.ts`).
 
 `joinWaitlist(formData: FormData)` — `'use server'` action:
 
@@ -103,8 +123,8 @@ ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
 3. **Duplicate check** — Query `waitlist` table by email. If exists, return success silently (no information leak)
 4. **Insert** — Insert into `waitlist` table via `createAdminClient()`
 5. **Resend audience** — Add contact via `resend.contacts.create({ audienceId: RESEND_WAITLIST_AUDIENCE_ID, email, firstName: name })`
-6. **Send email** — Call `sendWaitlistConfirmation(email, name)`
-7. **Track** — Server-side PostHog capture: `waitlist_signup_completed` on success, `waitlist_signup_failed` on error
+6. **Send email** — Call `sendWaitlistConfirmation(email, name)` (note: `shouldSendEmail()` is NOT called here since waitlist users have no `profiles` row; bounce handling for waitlist emails is out of scope for this phase)
+7. **Track** — Server-side PostHog capture via `posthog-node` client (see analytics section below): `waitlist_signup_completed` on success, `waitlist_signup_failed` on error
 
 Returns `{ success: boolean, error?: string }`.
 
@@ -136,12 +156,12 @@ New `sendWaitlistConfirmation(email: string, name?: string)` in `src/lib/email/s
 
 The page determines which form to show:
 
-- **Gate enabled** (`NEXT_PUBLIC_ALLOWED_EMAILS` is set and non-empty): renders `WaitlistForm`
-- **Gate disabled**: renders existing signup form unchanged
+- **Gate enabled** (`NEXT_PUBLIC_ALLOWED_EMAILS` is set and non-empty): renders `WaitlistForm` by default. The waitlist form itself collects email — if the entered email is in the allowed list, the page switches to show the real signup form. This way allowed beta testers can still sign up without a separate URL.
+- **Gate disabled**: renders existing signup form unchanged (future-proofs for open access)
 
 A small "Already have access? Sign in" link appears below the waitlist form. The existing "Already have an account? Sign in" link remains on the signup form.
 
-### WaitlistForm (`src/components/WaitlistForm.tsx`)
+### WaitlistForm (`src/app/(auth)/signup/WaitlistForm.tsx`)
 
 Client component with:
 
@@ -188,23 +208,26 @@ RESEND_WAITLIST_AUDIENCE_ID=
 
 ## Files Changed/Created
 
-| File                                                | Action | Description                                 |
-| --------------------------------------------------- | ------ | ------------------------------------------- |
-| `src/components/PostHogProvider.tsx`                | Create | PostHog init with consent-based persistence |
-| `src/components/PostHogWrapper.tsx`                 | Create | Dynamic import wrapper (SSR-disabled)       |
-| `src/components/ui/CookieConsent.tsx`               | Create | Cookie consent banner                       |
-| `src/lib/analytics.ts`                              | Create | Analytics event functions                   |
-| `src/actions/waitlist.ts`                           | Create | Waitlist server action                      |
-| `src/components/WaitlistForm.tsx`                   | Create | Waitlist signup form                        |
-| `src/lib/email/templates/waitlist-confirmation.tsx` | Create | Waitlist confirmation email                 |
-| `src/lib/email/send.ts`                             | Modify | Add `sendWaitlistConfirmation()`            |
-| `src/app/providers.tsx`                             | Modify | Add PostHogWrapper                          |
-| `src/app/(auth)/signup/page.tsx`                    | Modify | Add beta gate logic                         |
-| `src/app/landing-page.tsx`                          | Modify | Add landing analytics tracking              |
-| `src/components/Landing/Hero.tsx`                   | Modify | Add CTA click tracking                      |
-| `supabase/migrations/00009_add_waitlist.sql`        | Create | Waitlist table + RLS                        |
-| `.env.example`                                      | Modify | Add 3 new env vars                          |
-| `package.json`                                      | Modify | Add posthog-js, posthog-node                |
+| File                                                | Action | Description                                      |
+| --------------------------------------------------- | ------ | ------------------------------------------------ |
+| `src/components/PostHogProvider.tsx`                | Create | PostHog init with consent-based persistence      |
+| `src/components/PostHogWrapper.tsx`                 | Create | Dynamic import wrapper (SSR-disabled)            |
+| `src/components/ui/CookieConsent.tsx`               | Create | Cookie consent banner                            |
+| `src/lib/analytics.ts`                              | Create | Client-side analytics event functions            |
+| `src/lib/analytics-server.ts`                       | Create | Server-side PostHog client (posthog-node)        |
+| `src/app/(auth)/signup/actions.ts`                  | Create | Waitlist server action (colocated with signup)   |
+| `src/app/(auth)/signup/WaitlistForm.tsx`            | Create | Waitlist signup form (colocated with signup)     |
+| `src/lib/email/templates/waitlist-confirmation.tsx` | Create | Waitlist confirmation email                      |
+| `src/lib/email/send.ts`                             | Modify | Add `sendWaitlistConfirmation()`                 |
+| `src/app/providers.tsx`                             | Modify | Add PostHogWrapper                               |
+| `src/app/(auth)/signup/page.tsx`                    | Modify | Add beta gate logic with allowed-email detection |
+| `src/app/landing-page.tsx`                          | Modify | Add landing analytics tracking                   |
+| `src/components/Landing/Hero.tsx`                   | Modify | Add CTA click tracking                           |
+| `src/lib/supabase/middleware-utils.ts`              | Modify | Add PostHog host to CSP connect-src + script-src |
+| `supabase/migrations/00031_add_waitlist.sql`        | Create | Waitlist table + RLS                             |
+| `src/types/database.ts`                             | Modify | Add `DbWaitlist` interface                       |
+| `.env.example`                                      | Modify | Add 3 new env vars                               |
+| `package.json`                                      | Modify | Add posthog-js, posthog-node                     |
 
 ## Out of Scope
 
