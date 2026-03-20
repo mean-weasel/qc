@@ -68,15 +68,15 @@ export async function joinWaitlist(input: {
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
 
-  // 5. Add to Resend audience (best-effort)
-  const audienceId = process.env.RESEND_WAITLIST_AUDIENCE_ID
-  if (audienceId) {
+  // 5. Add to Resend waitlist segment (best-effort)
+  const segmentId = process.env.RESEND_WAITLIST_AUDIENCE_ID
+  if (segmentId) {
     try {
       await getResend().contacts.create({
-        audienceId,
         email: email.toLowerCase(),
         firstName: name || undefined,
         unsubscribed: false,
+        segments: [{ id: segmentId }],
       })
     } catch (err) {
       console.error('Failed to add waitlist contact to Resend:', err)
