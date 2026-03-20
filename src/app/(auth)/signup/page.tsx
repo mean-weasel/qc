@@ -2,16 +2,34 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-
 import { createClient } from '@/lib/supabase/client'
+import { WaitlistForm } from './WaitlistForm'
+
+function isBetaGateEnabled(): boolean {
+  const allowed = process.env.NEXT_PUBLIC_ALLOWED_EMAILS
+  return Boolean(allowed && allowed.trim().length > 0)
+}
 
 export default function SignupPage() {
+  const [showSignup, setShowSignup] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+
+  // Show waitlist form if gate is enabled and user hasn't been identified as allowed
+  if (isBetaGateEnabled() && !showSignup) {
+    return (
+      <WaitlistForm
+        onAllowedEmail={(allowedEmail) => {
+          setEmail(allowedEmail)
+          setShowSignup(true)
+        }}
+      />
+    )
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
