@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Heart, MessageCircle, TrendingUp, ArrowRight, ChevronDown } from 'lucide-react'
 import { staggerContainer, slideUp, staggerItem } from '@/lib/animations'
 import { Button } from '@/components/ui/button'
+import { trackCtaClicked } from '@/lib/analytics'
 
 const FEATURES = [
   { icon: MessageCircle, text: 'Structured Sessions' },
@@ -68,7 +69,11 @@ export function Hero(): React.ReactNode {
             className="px-8 py-4 text-lg font-semibold group gradient-primary text-white border-0 shadow-lg shadow-rose-200/50 hover:shadow-xl hover:shadow-rose-300/50 transition-all"
             asChild
           >
-            <Link href="/signup" className="flex items-center gap-2">
+            <Link
+              href="/signup"
+              className="flex items-center gap-2"
+              onClick={() => trackCtaClicked('hero', 'Start your journey')}
+            >
               Start your journey
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -80,7 +85,9 @@ export function Hero(): React.ReactNode {
             className="border-2 border-rose-300 dark:border-rose-500/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 shadow-md hover:shadow-lg transition-all px-8 py-4 text-lg font-semibold"
             asChild
           >
-            <a href="#features">Learn more</a>
+            <a href="#features" onClick={() => trackCtaClicked('hero', 'Learn more')}>
+              Learn more
+            </a>
           </Button>
         </motion.div>
 
