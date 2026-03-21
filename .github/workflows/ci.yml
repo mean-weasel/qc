@@ -87,8 +87,8 @@ jobs:
         if: steps.supabase-docker-cache.outputs.cache-hit == 'true'
         run: docker load -i /tmp/supabase-docker-images.tar.zst
 
-      - name: Start local Supabase (background, skip migration health check)
-        run: supabase start --ignore-health-check > /tmp/supabase.log 2>&1 &
+      - name: Start local Supabase (background)
+        run: supabase start > /tmp/supabase.log 2>&1 &
 
       - name: Save Docker images to cache
         if: steps.supabase-docker-cache.outputs.cache-hit != 'true'
@@ -137,23 +137,31 @@ jobs:
       - name: Build app
         run: npx next build
 
-      - name: Wait for Supabase containers to be ready
+      - name: Wait for Supabase to be ready
         run: |
-          for i in $(seq 1 120); do
+          # Wait for supabase start to finish (it runs migrations + seed)
+          # supabase start may fail if migrations are batched — if so, db reset fixes it
+          for i in $(seq 1 150); do
             if supabase status > /dev/null 2>&1; then
-              echo "Supabase containers ready (attempt $i)"
-              break
+              echo "Supabase ready (attempt $i)"
+              exit 0
             fi
             sleep 3
           done
-          # Apply migrations sequentially (supabase start batches them, causing failures)
-          echo "Applying migrations with db reset..."
-          supabase db reset --debug 2>&1 | tail -30 || {
-            echo "db reset failed — falling back to start log:"
-            cat /tmp/supabase.log
-            exit 1
-          }
-          echo "Supabase ready with migrations applied"
+          echo "supabase start did not report healthy — trying db reset to fix migrations..."
+          cat /tmp/supabase.log | tail -20
+          supabase db reset 2>&1 | tail -20
+          # Check if services are healthy after reset
+          for i in $(seq 1 60); do
+            if supabase status > /dev/null 2>&1; then
+              echo "Supabase ready after db reset (attempt $i)"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Supabase failed to start even after db reset"
+          supabase status 2>&1 || true
+          exit 1
 
       - name: Verify Supabase auth is ready
         run: |
