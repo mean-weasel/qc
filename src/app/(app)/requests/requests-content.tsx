@@ -7,6 +7,7 @@ import { Inbox, Send } from 'lucide-react'
 
 import { RequestCard } from '@/components/requests/RequestCard'
 import { RequestForm } from '@/components/requests/RequestForm'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button } from '@/components/ui/button'
 import { useRealtimeCouple } from '@/hooks/useRealtimeCouple'
@@ -83,6 +84,7 @@ export function RequestsContent({
   const [showForm, setShowForm] = useState(false)
   const [tab, setTab] = useState<'received' | 'sent'>('received')
   const [convertingId, setConvertingId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const [formState, formAction, isPending] = useActionState<RequestActionState, FormData>(async (prev, formData) => {
     const result = await createRequest(prev, formData)
@@ -121,7 +123,14 @@ export function RequestsContent({
     }
   }
 
-  async function handleDelete(id: string): Promise<void> {
+  async function handleDeleteClick(id: string): Promise<void> {
+    setDeleteTarget(id)
+  }
+
+  async function handleConfirmDelete(): Promise<void> {
+    if (!deleteTarget) return
+    const id = deleteTarget
+    setDeleteTarget(null)
     const prev = requests
     setRequests((r) => r.filter((req) => req.id !== id))
     const result = await deleteRequest(id)
@@ -210,13 +219,23 @@ export function RequestsContent({
               request={request}
               isReceiver={request.requested_for === userId}
               onRespond={handleRespond}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               onConvertToReminder={handleConvertToReminder}
               isConverting={convertingId === request.id}
             />
           ))}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+        title="Delete Request"
+        description="Are you sure you want to delete this request? This action cannot be undone."
+        onConfirm={() => void handleConfirmDelete()}
+      />
     </PageContainer>
   )
 }

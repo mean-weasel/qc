@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { DiscoveryCard } from '@/components/love-languages/DiscoveryCard'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { Plus, Heart, Sparkles, Info, Lightbulb } from 'lucide-react'
 import type { LoveLanguage, LoveLanguageDiscovery } from '@/types'
 
@@ -136,6 +137,7 @@ export default function LoveLanguagesPage(): React.ReactNode {
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingLanguage, setEditingLanguage] = useState<LoveLanguage | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   function handleEdit(language: LoveLanguage): void {
     setEditingLanguage(language)
@@ -143,8 +145,13 @@ export default function LoveLanguagesPage(): React.ReactNode {
   }
 
   function handleDelete(id: string): void {
-    if (confirm('Are you sure you want to delete this love language?')) {
-      void deleteLanguage(id)
+    setDeleteTarget(id)
+  }
+
+  function handleConfirmDelete(): void {
+    if (deleteTarget) {
+      void deleteLanguage(deleteTarget)
+      setDeleteTarget(null)
     }
   }
 
@@ -266,6 +273,16 @@ export default function LoveLanguagesPage(): React.ReactNode {
         onOpenChange={handleDialogClose}
         onSubmit={handleSubmit}
         initialLanguage={editingLanguage ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+        title="Delete Love Language"
+        description="Are you sure you want to delete this love language? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
       />
     </PageContainer>
   )

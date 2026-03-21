@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { Plus, Calendar, CheckCircle2, Sparkles, Info } from 'lucide-react'
 import type { LoveAction, LoveActionStatus, LoveActionFrequency, LoveActionDifficulty } from '@/types'
 
@@ -24,6 +25,7 @@ function LoveActionsContent(): React.ReactNode {
 
   const [showAddDialog, setShowAddDialog] = useState(!!preselectedLanguageId)
   const [editingAction, setEditingAction] = useState<LoveAction | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const allLanguages = [...languages, ...partnerLanguages]
   const pendingActions = actions.filter((a) => a.status === 'planned' || a.status === 'suggested')
@@ -41,8 +43,13 @@ function LoveActionsContent(): React.ReactNode {
   }
 
   function handleDelete(id: string): void {
-    if (confirm('Are you sure you want to delete this love action?')) {
-      void deleteAction(id)
+    setDeleteTarget(id)
+  }
+
+  function handleConfirmDelete(): void {
+    if (deleteTarget) {
+      void deleteAction(deleteTarget)
+      setDeleteTarget(null)
     }
   }
 
@@ -159,6 +166,16 @@ function LoveActionsContent(): React.ReactNode {
         partnerLanguages={partnerLanguages}
         editingAction={editingAction}
         preselectedLanguageId={preselectedLanguageId}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+        title="Delete Love Action"
+        description="Are you sure you want to delete this love action? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
       />
     </div>
   )

@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { NoteEditor } from '@/components/notes/NoteEditor'
 import { NoteList } from '@/components/notes/NoteList'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { useRealtimeCouple } from '@/hooks/useRealtimeCouple'
 import type { DbNote, DbCategory } from '@/types'
@@ -66,6 +67,7 @@ export function NotesPageContent({ notes: initialNotes, currentUserId, coupleId,
   const [editingNote, setEditingNote] = useState<DbNote | null>(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
 
   useRealtimeCouple<DbNote>({
     table: 'notes',
@@ -134,6 +136,11 @@ export function NotesPageContent({ notes: initialNotes, currentUserId, coupleId,
 
   const handleClearSelection = useCallback(() => setSelectedIds(new Set()), [])
 
+  const handleBulkDeleteClick = useCallback(() => {
+    if (selectedIds.size === 0) return
+    setShowBulkDeleteConfirm(true)
+  }, [selectedIds])
+
   const handleBulkDelete = useCallback(() => {
     const ids = Array.from(selectedIds)
     if (ids.length === 0) return
@@ -141,6 +148,7 @@ export function NotesPageContent({ notes: initialNotes, currentUserId, coupleId,
     setNotes((prev) => prev.filter((n) => !selectedIds.has(n.id)))
     setSelectedIds(new Set())
     setSelectMode(false)
+    setShowBulkDeleteConfirm(false)
     bulkDeleteNotes(ids)
       .then(({ error }) => {
         if (error) {
@@ -185,9 +193,17 @@ export function NotesPageContent({ notes: initialNotes, currentUserId, coupleId,
         onDelete={handleDelete}
         onSelectAllOwn={handleSelectAllOwn}
         onClearSelection={handleClearSelection}
-        onBulkDelete={handleBulkDelete}
+        onBulkDelete={handleBulkDeleteClick}
       />
       <NoteEditor note={editingNote} isOpen={editorOpen} onClose={handleClose} />
+
+      <ConfirmDeleteDialog
+        open={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        title="Delete Selected Notes"
+        description={`Are you sure you want to delete ${selectedIds.size} ${selectedIds.size === 1 ? 'note' : 'notes'}? This action cannot be undone.`}
+        onConfirm={handleBulkDelete}
+      />
     </PageContainer>
   )
 }
