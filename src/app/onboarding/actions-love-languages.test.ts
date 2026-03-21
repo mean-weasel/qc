@@ -24,6 +24,11 @@ vi.mock('@/lib/email/send', () => ({
 vi.mock('@/lib/email/templates/invite', () => ({
   InviteEmail: vi.fn().mockReturnValue(null),
 }))
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: () => ({
+    check: vi.fn().mockResolvedValue(true),
+  }),
+}))
 
 class RedirectError extends Error {
   constructor(public url: string) {
