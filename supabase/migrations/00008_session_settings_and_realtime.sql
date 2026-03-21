@@ -40,14 +40,9 @@ BEGIN
 END;
 $$;
 
--- Wrap in DO block to defer table resolution in Supabase CLI batch mode
-DO $updated_at_triggers$
-BEGIN
-  CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.profiles
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
-  CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.notes
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
-  CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.love_languages
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
-END;
-$updated_at_triggers$;
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.notes
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.love_languages
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();

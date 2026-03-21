@@ -52,11 +52,7 @@ END;
 $$;
 
 -- Prevent duplicate active check-in sessions per couple
--- Wrap in DO block to defer table resolution in Supabase CLI batch mode
-DO $check_in_index$
-BEGIN
-  CREATE UNIQUE INDEX idx_check_ins_active_couple
-  ON public.check_ins (couple_id)
-  WHERE status = 'in-progress';
-END;
-$check_in_index$;
+-- Only one in-progress check-in allowed at a time per couple
+CREATE UNIQUE INDEX idx_check_ins_active_couple
+ON check_ins (couple_id)
+WHERE status = 'in-progress';

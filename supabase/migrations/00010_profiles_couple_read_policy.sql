@@ -17,16 +17,10 @@ AS $$
   SELECT couple_id FROM public.profiles WHERE id = auth.uid();
 $$;
 
-DO $fix$
-BEGIN
-  EXECUTE $sql$
-    CREATE POLICY "Users can read profiles in same couple"
-      ON public.profiles
-      FOR SELECT
-      USING (
-        couple_id IS NOT NULL
-        AND couple_id = public.get_my_couple_id()
-      )
-  $sql$;
-END;
-$fix$;
+CREATE POLICY "Users can read profiles in same couple"
+  ON public.profiles
+  FOR SELECT
+  USING (
+    couple_id IS NOT NULL
+    AND couple_id = public.get_my_couple_id()
+  );
