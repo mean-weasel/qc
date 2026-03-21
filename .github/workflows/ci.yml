@@ -74,14 +74,14 @@ jobs:
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 2.67.1
+          version: 2.78.1
 
       - name: Cache Supabase Docker images
         uses: actions/cache@v5
         id: supabase-docker-cache
         with:
           path: /tmp/supabase-docker-images.tar.zst
-          key: supabase-docker-${{ runner.os }}-cli-2.67.1-${{ hashFiles('supabase/config.toml') }}
+          key: supabase-docker-${{ runner.os }}-cli-2.78.1-${{ hashFiles('supabase/config.toml') }}
 
       - name: Load cached Docker images
         if: steps.supabase-docker-cache.outputs.cache-hit == 'true'
