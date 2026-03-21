@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
+import { loginWithPassword } from './actions'
 import { sanitizeRedirect } from '@/lib/redirect'
 import { createClient } from '@/lib/supabase/client'
 
@@ -32,14 +33,10 @@ function LoginForm() {
       }
     }
 
-    const supabase = createClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const result = await loginWithPassword({ email, password })
 
-    if (signInError) {
-      setError('Invalid email or password')
+    if (result.error) {
+      setError(result.error)
       setLoading(false)
       return
     }

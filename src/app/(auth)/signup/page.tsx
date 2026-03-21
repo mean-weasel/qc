@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
-import { createClient } from '@/lib/supabase/client'
+import { signupWithPassword } from './signup-actions'
 
 export default function SignupPage() {
   const [displayName, setDisplayName] = useState('')
@@ -28,22 +28,10 @@ export default function SignupPage() {
       }
     }
 
-    const supabase = createClient()
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+    const result = await signupWithPassword({ displayName, email, password })
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${appUrl}/auth/callback`,
-        data: {
-          display_name: displayName,
-        },
-      },
-    })
-
-    if (signUpError) {
-      setError('Unable to create account. Please try again.')
+    if (result.error) {
+      setError(result.error)
       setLoading(false)
       return
     }
