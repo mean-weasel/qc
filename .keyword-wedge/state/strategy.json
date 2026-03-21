@@ -1,0 +1,82 @@
+{
+  "lastRun": "2026-03-17",
+  "mode": "cold-start",
+  "targetKeywords": {
+    "phase1": [
+      {
+        "keyword": "5 love languages quiz",
+        "volume": "10k-100k",
+        "competition": "Low",
+        "feature": "love-language-quiz"
+      },
+      { "keyword": "couples quiz", "volume": "1k-10k", "competition": "Low", "feature": "relationship-quiz" },
+      {
+        "keyword": "love compatibility test",
+        "volume": "1k-10k",
+        "competition": "Low",
+        "feature": "love-language-quiz"
+      },
+      {
+        "keyword": "five love languages test",
+        "volume": "1k-10k",
+        "competition": "Low",
+        "feature": "love-language-quiz"
+      },
+      {
+        "keyword": "relationship quiz for couples",
+        "volume": "100-1k",
+        "competition": "Low",
+        "feature": "relationship-quiz"
+      },
+      {
+        "keyword": "couples check in questions",
+        "volume": "100-1k",
+        "competition": "Low",
+        "feature": "conversation-starters"
+      },
+      { "keyword": "relationship app for couples", "volume": "1k-10k", "competition": "Low", "feature": "landing-page" }
+    ],
+    "phase2": [
+      {
+        "keyword": "love language quiz",
+        "volume": "10k-100k",
+        "competition": "Medium",
+        "feature": "love-language-quiz"
+      },
+      {
+        "keyword": "love language test",
+        "volume": "100k-1m",
+        "competition": "Medium",
+        "feature": "love-language-quiz"
+      },
+      {
+        "keyword": "5 love languages test",
+        "volume": "100k-1m",
+        "competition": "Medium",
+        "feature": "love-language-quiz"
+      }
+    ],
+    "phase3": [
+      {
+        "keyword": "conversation starters for couples",
+        "volume": "1k-10k",
+        "competition": "High",
+        "feature": "conversation-starters"
+      },
+      { "keyword": "couples communication exercises", "volume": "1k-10k", "competition": "High", "feature": "content" },
+      {
+        "keyword": "how to communicate better in a relationship",
+        "volume": "1k-10k",
+        "competition": "High",
+        "feature": "content"
+      }
+    ]
+  },
+  "featurePriority": [
+    "love-language-quiz",
+    "conversation-starters",
+    "relationship-quiz",
+    "demo-checkin",
+    "communication-content"
+  ]
+}

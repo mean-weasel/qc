@@ -52,14 +52,15 @@ export function addSecurityHeaders(response: NextResponse): void {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
   const extraConnectSrc = supabaseUrl && !supabaseUrl.includes('.supabase.co') ? ` ${supabaseUrl}` : ''
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
 
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+    `script-src 'self' 'unsafe-inline' ${posthogHost}${isDev ? " 'unsafe-eval'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: https://*.supabase.co${extraConnectSrc}`,
     "font-src 'self'",
-    `connect-src 'self' https://*.supabase.co${extraConnectSrc}${isDev ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    `connect-src 'self' https://*.supabase.co ${posthogHost}${extraConnectSrc}${isDev ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'",
     "frame-src 'none'",
     "frame-ancestors 'none'",

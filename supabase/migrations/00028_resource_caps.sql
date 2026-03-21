@@ -14,8 +14,8 @@ BEGIN
   v_max := TG_ARGV[1]::integer;
 
   EXECUTE format(
-    'SELECT COUNT(*) FROM %I WHERE couple_id = $1',
-    TG_TABLE_NAME
+    'SELECT COUNT(*) FROM %I.%I WHERE couple_id = $1',
+    TG_TABLE_SCHEMA, TG_TABLE_NAME
   )
   INTO v_count
   USING NEW.couple_id;

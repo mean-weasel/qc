@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createRateLimiter } from '@/lib/rate-limit'
 
 import { getResend, EMAIL_FROM, BATCH_SIZE } from './resend'
+import { WaitlistConfirmationEmail } from './templates/waitlist-confirmation'
 
 const emailDailyLimiter = createRateLimiter({ maxRequests: 50, windowSeconds: 86400 })
 
@@ -98,4 +99,20 @@ export async function shouldSendEmail(email: string): Promise<boolean> {
   if (data.email_complained_at) return false
   if (data.email_opted_out_at) return false
   return true
+}
+
+export async function sendWaitlistConfirmation(email: string, name?: string): Promise<SendEmailResult> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tryqc.co'
+
+  const { data, error } = await getResend().emails.send({
+    from: EMAIL_FROM,
+    to: email,
+    subject: "You're on the QC waitlist!",
+    react: WaitlistConfirmationEmail({
+      name,
+      unsubscribeUrl: `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(email)}`,
+    }),
+  })
+
+  return { data, error }
 }
