@@ -30,36 +30,36 @@ $$;
 
 -- reminders: 50 per couple
 CREATE TRIGGER trg_reminders_resource_cap
-  BEFORE INSERT ON reminders
+  BEFORE INSERT ON public.reminders
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '50');
 
 -- notes: 1000 per couple
 CREATE TRIGGER trg_notes_resource_cap
-  BEFORE INSERT ON notes
+  BEFORE INSERT ON public.notes
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '1000');
 
 -- milestones: 200 per couple
 CREATE TRIGGER trg_milestones_resource_cap
-  BEFORE INSERT ON milestones
+  BEFORE INSERT ON public.milestones
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '200');
 
 -- requests: 100 per couple
 CREATE TRIGGER trg_requests_resource_cap
-  BEFORE INSERT ON requests
+  BEFORE INSERT ON public.requests
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '100');
 
 -- action_items: 500 per couple
 CREATE TRIGGER trg_action_items_resource_cap
-  BEFORE INSERT ON action_items
+  BEFORE INSERT ON public.action_items
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '500');
 
 -- love_actions: 500 per couple
 CREATE TRIGGER trg_love_actions_resource_cap
-  BEFORE INSERT ON love_actions
+  BEFORE INSERT ON public.love_actions
   FOR EACH ROW
   EXECUTE FUNCTION enforce_couple_resource_limit('couple_id', '500');
