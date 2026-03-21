@@ -243,7 +243,7 @@ export function RequestsContent({
               request={request}
               isReceiver={request.requested_for === userId}
               onRespond={handleRespond}
-              onDelete={setDeleteTarget}
+              onDelete={async (id) => setDeleteTarget(id)}
               onConvertToReminder={handleConvertToReminder}
               isConverting={convertingId === request.id}
             />
