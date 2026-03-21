@@ -16,7 +16,7 @@ export function PageContainer({
   className,
 }: PageContainerProps): React.ReactNode {
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <div id="main-content" className="mx-auto w-full max-w-6xl">
       {title && (
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
