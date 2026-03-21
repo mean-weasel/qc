@@ -43,7 +43,7 @@ export default function SignupPage() {
   if (success) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/50 px-4">
-        <div className="w-full max-w-sm space-y-4 text-center">
+        <div className="w-full max-w-sm space-y-4 text-center" aria-live="polite">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Check your email</h1>
           <p className="text-sm text-muted-foreground">
             We sent a confirmation link to <span className="font-medium">{email}</span>. Click the link to activate your
@@ -76,9 +76,18 @@ export default function SignupPage() {
           </p>
         </div>
 
-        {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div
+            id="signup-error"
+            role="alert"
+            aria-live="polite"
+            className="rounded-md bg-red-50 p-3 text-sm text-red-700"
+          >
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? 'signup-error' : undefined}>
           <div>
             <label htmlFor="display-name" className="block text-sm font-medium text-foreground">
               Display name
@@ -87,6 +96,8 @@ export default function SignupPage() {
               id="display-name"
               type="text"
               required
+              aria-required="true"
+              autoComplete="name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -102,6 +113,8 @@ export default function SignupPage() {
               id="email"
               type="email"
               required
+              aria-required="true"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -117,6 +130,8 @@ export default function SignupPage() {
               id="password"
               type="password"
               required
+              aria-required="true"
+              autoComplete="new-password"
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -128,6 +143,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
+            aria-busy={loading}
             className="w-full rounded-md bg-primary px-4 py-2.5 text-base min-h-[44px] font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? 'Creating account...' : 'Create account'}

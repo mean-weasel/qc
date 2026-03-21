@@ -73,9 +73,18 @@ function LoginForm() {
           </p>
         </div>
 
-        {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div
+            id="login-error"
+            role="alert"
+            aria-live="polite"
+            className="rounded-md bg-red-50 p-3 text-sm text-red-700"
+          >
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? 'login-error' : undefined}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground">
               Email
@@ -84,6 +93,8 @@ function LoginForm() {
               id="email"
               type="email"
               required
+              aria-required="true"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -99,6 +110,8 @@ function LoginForm() {
               id="password"
               type="password"
               required
+              aria-required="true"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -115,6 +128,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
+            aria-busy={loading}
             className="w-full rounded-md bg-primary px-4 py-2.5 text-base min-h-[44px] font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign in'}
