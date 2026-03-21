@@ -28,6 +28,12 @@ vi.mock('@/lib/email/templates/invite', () => ({
 vi.mock('@/lib/email/templates/welcome', () => ({
   WelcomeEmail: vi.fn().mockReturnValue(null),
 }))
+const mockRateLimitCheck = vi.fn().mockResolvedValue(true)
+vi.mock('@/lib/rate-limit', () => ({
+  createRateLimiter: vi.fn().mockReturnValue({
+    check: mockRateLimitCheck,
+  }),
+}))
 class RedirectError extends Error {
   constructor(public url: string) {
     super(`NEXT_REDIRECT:${url}`)
@@ -141,6 +147,16 @@ describe('completeOnboarding', () => {
     const result = await completeOnboarding({ error: null }, fd)
 
     expect(result.error).toBe('Couple creation failed')
+  })
+
+  it('returns error when rate limit is exceeded', async () => {
+    const { completeOnboarding } = await import('./actions')
+    mockRateLimitCheck.mockResolvedValueOnce(false)
+
+    const fd = makeFormData({ displayName: 'Jeremy', partnerEmail: 'partner@example.com' })
+    const result = await completeOnboarding({ error: null }, fd)
+
+    expect(result.error).toBe('Too many attempts. Please try again later.')
   })
 
   it('returns partial success when invite creation fails', async () => {
