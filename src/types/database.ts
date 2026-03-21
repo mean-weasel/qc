@@ -203,3 +203,11 @@ export interface DbLoveLanguageDiscovery {
   converted_to_language_id: string | null
   created_at: string
 }
+
+export interface DbWaitlist {
+  id: string
+  email: string
+  name: string | null
+  source: string | null
+  created_at: string
+}

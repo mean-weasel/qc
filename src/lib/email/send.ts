@@ -83,21 +83,6 @@ export async function sendBatchEmails({ recipients, subject, react }: BatchEmail
 }
 
 /**
- * Send waitlist confirmation email to a new waitlist subscriber.
- * Not couple-scoped — waitlist users have no profiles row.
- */
-export async function sendWaitlistConfirmation(email: string, name?: string): Promise<SendEmailResult> {
-  const { data, error } = await getResend().emails.send({
-    from: EMAIL_FROM,
-    to: email,
-    subject: "You're on the QC waitlist!",
-    react: WaitlistConfirmationEmail({ name }),
-  })
-
-  return { data, error }
-}
-
-/**
  * Check if we should send email to this address.
  * Returns false if the profile has bounced, complained, or opted out.
  */
@@ -114,4 +99,20 @@ export async function shouldSendEmail(email: string): Promise<boolean> {
   if (data.email_complained_at) return false
   if (data.email_opted_out_at) return false
   return true
+}
+
+export async function sendWaitlistConfirmation(email: string, name?: string): Promise<SendEmailResult> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tryqc.co'
+
+  const { data, error } = await getResend().emails.send({
+    from: EMAIL_FROM,
+    to: email,
+    subject: "You're on the QC waitlist!",
+    react: WaitlistConfirmationEmail({
+      name,
+      unsubscribeUrl: `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(email)}`,
+    }),
+  })
+
+  return { data, error }
 }

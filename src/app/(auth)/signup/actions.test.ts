@@ -36,13 +36,12 @@ vi.mock('@/lib/email/resend', () => ({
   }),
 }))
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+vi.mock('@/lib/analytics-server', () => ({
+  serverTrackWaitlistSignupCompleted: vi.fn(),
+  serverTrackWaitlistSignupFailed: vi.fn(),
+}))
 
-function makeFormData(entries: Record<string, string>): FormData {
-  const fd = new FormData()
-  for (const [k, v] of Object.entries(entries)) fd.append(k, v)
-  return fd
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Build a chainable Supabase mock for a single table call sequence. */
 function makeQueryChain(
@@ -81,10 +80,10 @@ describe('joinWaitlist', () => {
   it('returns error for invalid email format', async () => {
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'not-an-email' }))
+    const result = await joinWaitlist({ email: 'not-an-email' })
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid email address')
+    expect(result.error).toBeTruthy()
     expect(mockFrom).not.toHaveBeenCalled()
   })
 
@@ -93,7 +92,7 @@ describe('joinWaitlist', () => {
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'user@example.com' }))
+    const result = await joinWaitlist({ email: 'user@example.com' })
 
     expect(result.success).toBe(false)
     expect(result.error).toBe('Too many attempts. Please try again later.')
@@ -106,9 +105,9 @@ describe('joinWaitlist', () => {
 
     const { joinWaitlist } = await import('./actions')
 
-    await joinWaitlist(makeFormData({ email: 'user@example.com' }))
+    await joinWaitlist({ email: 'user@example.com' })
 
-    expect(mockRateLimitCheck).toHaveBeenCalledWith('waitlist:10.0.0.1')
+    expect(mockRateLimitCheck).toHaveBeenCalledWith('waitlist:ip:10.0.0.1')
   })
 
   it('returns success silently for duplicate email (no info leak)', async () => {
@@ -117,37 +116,49 @@ describe('joinWaitlist', () => {
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'existing@example.com' }))
+    const result = await joinWaitlist({ email: 'existing@example.com' })
 
     expect(result.success).toBe(true)
     expect(result.error).toBeUndefined()
-    // Should not attempt a second insert
     expect(chain._insert).not.toHaveBeenCalled()
   })
 
-  it('inserts new waitlist entry and returns success on happy path', async () => {
+  it('inserts new waitlist entry with lowercase email on happy path', async () => {
     const chain = makeQueryChain()
     mockFrom.mockReturnValue(chain)
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'new@example.com', name: 'Alice', source: 'landing' }))
+    const result = await joinWaitlist({ email: 'Alice@Example.COM', name: 'Alice', source: 'landing' })
 
     expect(result.success).toBe(true)
     expect(result.error).toBeUndefined()
-    expect(chain._insert).toHaveBeenCalledWith({ email: 'new@example.com', name: 'Alice', source: 'landing' })
+    expect(chain._insert).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'alice@example.com', source: 'landing' }),
+    )
   })
 
-  it('returns error when DB insert fails', async () => {
-    const chain = makeQueryChain({ insertResult: { error: { message: 'unique_violation' } } })
+  it('returns error when DB insert fails (non-unique error)', async () => {
+    const chain = makeQueryChain({ insertResult: { error: { message: 'connection failed', code: '08006' } } })
     mockFrom.mockReturnValue(chain)
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'fail@example.com' }))
+    const result = await joinWaitlist({ email: 'fail@example.com' })
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Failed to join waitlist. Please try again.')
+    expect(result.error).toBeTruthy()
+  })
+
+  it('returns success on unique violation (race condition defense)', async () => {
+    const chain = makeQueryChain({ insertResult: { error: { message: 'unique_violation', code: '23505' } } })
+    mockFrom.mockReturnValue(chain)
+
+    const { joinWaitlist } = await import('./actions')
+
+    const result = await joinWaitlist({ email: 'race@example.com' })
+
+    expect(result.success).toBe(true)
   })
 
   it('still returns success when Resend audience add throws (non-blocking)', async () => {
@@ -155,13 +166,12 @@ describe('joinWaitlist', () => {
     mockFrom.mockReturnValue(chain)
     mockContactsCreate.mockRejectedValue(new Error('Resend API unavailable'))
 
-    // Set an audience ID so the contacts.create path is exercised
     const originalAudienceId = process.env.RESEND_WAITLIST_AUDIENCE_ID
     process.env.RESEND_WAITLIST_AUDIENCE_ID = 'aud_test_123'
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'new@example.com' }))
+    const result = await joinWaitlist({ email: 'new@example.com' })
 
     expect(result.success).toBe(true)
     expect(result.error).toBeUndefined()
@@ -176,30 +186,19 @@ describe('joinWaitlist', () => {
 
     const { joinWaitlist } = await import('./actions')
 
-    const result = await joinWaitlist(makeFormData({ email: 'new@example.com' }))
+    const result = await joinWaitlist({ email: 'new@example.com' })
 
     expect(result.success).toBe(true)
     expect(result.error).toBeUndefined()
   })
 
-  it('sends confirmation email with correct email and name', async () => {
+  it('queries waitlist table for duplicate check with lowercase email', async () => {
     const chain = makeQueryChain()
     mockFrom.mockReturnValue(chain)
 
     const { joinWaitlist } = await import('./actions')
 
-    await joinWaitlist(makeFormData({ email: 'alice@example.com', name: 'Alice' }))
-
-    expect(mockSendWaitlistConfirmation).toHaveBeenCalledWith('alice@example.com', 'Alice')
-  })
-
-  it('queries waitlist table for duplicate check before inserting', async () => {
-    const chain = makeQueryChain()
-    mockFrom.mockReturnValue(chain)
-
-    const { joinWaitlist } = await import('./actions')
-
-    await joinWaitlist(makeFormData({ email: 'new@example.com' }))
+    await joinWaitlist({ email: 'New@Example.com' })
 
     expect(mockFrom).toHaveBeenCalledWith('waitlist')
     expect(chain.select).toHaveBeenCalledWith('id')

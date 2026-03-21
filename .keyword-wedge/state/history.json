@@ -1,0 +1,21 @@
+{
+  "runs": [
+    {
+      "date": "2026-03-17",
+      "mode": "cold-start",
+      "seedKeywords": 10,
+      "ideasReturned": 4651,
+      "source": "Google Keyword Planner",
+      "region": "US",
+      "language": "English",
+      "dateRange": "Mar 2025 - Feb 2026",
+      "topFinding": "Love language quizzes are #1 SEO opportunity (200k-1m+ combined monthly searches, multiple Low competition entry points)",
+      "keyChanges": [
+        "Love Language Quiz promoted to Priority 1 (was not in original audit top 3)",
+        "Interactive Demo demoted to Priority 4 (100-1k volume vs 200k+ for quiz)",
+        "Printable Templates deprioritized (100-1k volume, High competition)",
+        "Offline Mode moved to backlog (no search demand)"
+      ]
+    }
+  ]
+}

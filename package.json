@@ -52,6 +52,8 @@
     "framer-motion": "^12",
     "lucide-react": "^0.577",
     "next": "16",
+    "posthog-js": "^1.363.1",
+    "posthog-node": "^5.28.5",
     "react": "19",
     "react-dom": "19",
     "recharts": "^3.8.0",

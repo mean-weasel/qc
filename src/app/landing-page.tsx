@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { Heart } from 'lucide-react'
+import { trackLandingViewed, trackCtaClicked, initScrollDepthTracking } from '@/lib/analytics'
 import { Hero } from '@/components/Landing/Hero'
 import { HowItWorks } from '@/components/Landing/HowItWorks'
 import { SocialProof } from '@/components/Landing/SocialProof'
@@ -9,6 +11,12 @@ import { FeatureGrid } from '@/components/Landing/FeatureGrid'
 import { Footer } from '@/components/Landing/Footer'
 
 export function LandingPage(): React.ReactNode {
+  useEffect(() => {
+    trackLandingViewed()
+    const cleanup = initScrollDepthTracking()
+    return cleanup
+  }, [])
+
   return (
     <main id="main-content" className="overflow-hidden">
       {/* Minimal landing header */}
@@ -28,6 +36,7 @@ export function LandingPage(): React.ReactNode {
             <Link
               href="/signup"
               className="inline-flex items-center rounded-lg bg-[hsl(var(--primary))] px-4 py-2 min-h-[44px] text-sm font-medium text-white transition-opacity hover:opacity-90"
+              onClick={() => trackCtaClicked('nav', 'Sign Up')}
             >
               Sign Up
             </Link>

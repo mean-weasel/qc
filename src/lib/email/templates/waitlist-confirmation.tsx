@@ -5,30 +5,32 @@ interface WaitlistConfirmationEmailProps {
   unsubscribeUrl?: string
 }
 
-export function WaitlistConfirmationEmail({ name, unsubscribeUrl }: WaitlistConfirmationEmailProps) {
+export function WaitlistConfirmationEmail({
+  name,
+  unsubscribeUrl,
+}: WaitlistConfirmationEmailProps): React.ReactElement {
+  const greeting = name ? `Hey ${name},` : 'Hey there,'
+
   return (
     <Html>
       <Head />
       <Body style={body}>
         <Container style={container}>
-          <Text style={heading}>You&apos;re on the QC waitlist!</Text>
-          <Text style={paragraph}>Hey {name ? name : 'there'},</Text>
+          <Text style={heading}>You're on the QC waitlist!</Text>
+          <Text style={paragraph}>{greeting}</Text>
           <Text style={paragraph}>
-            QC is currently in private beta. We&apos;re letting people in gradually and will email you as soon as your
-            spot is ready.
+            Thanks for your interest in QC! We're currently in private beta, letting people in gradually. We'll email
+            you as soon as your spot is ready.
+          </Text>
+          <Text style={paragraph}>
+            In the meantime, know that QC is being built to help couples strengthen their connection through regular
+            check-ins, shared notes, and celebrating milestones together.
           </Text>
           <Section style={buttonSection}>
             <Button style={button} href="https://qualitycouple.com">
               Visit QC
             </Button>
           </Section>
-          <Text style={footer}>
-            Questions? Visit our{' '}
-            <Link href="https://tryqc.co/terms" style={link}>
-              terms of service
-            </Link>
-            .
-          </Text>
           <Text style={footerLinks}>
             <Link href="https://tryqc.co/privacy" style={link}>
               Privacy Policy
@@ -110,5 +112,5 @@ const footerLinks = {
   lineHeight: '16px',
   color: '#9ca3af',
   textAlign: 'center' as const,
-  marginTop: '16px',
+  marginTop: '24px',
 }
