@@ -151,17 +151,9 @@ jobs:
             cat /tmp/supabase.log
             exit 1
           fi
-          # Supabase CLI batches migrations and can fail on cross-file DDL.
-          # Apply migrations + seed sequentially via psql as a reliable fallback.
-          echo "Applying migrations via psql..."
-          for f in supabase/migrations/*.sql; do
-            echo "  $f"
-            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f "$f" -v ON_ERROR_STOP=1 || {
-              echo "Migration failed: $f"
-              exit 1
-            }
-          done
-          echo "Applying seed data..."
+          # Seed is disabled in config.toml because Supabase CLI batch-parses it
+          # and fails on table references. Apply seed sequentially via psql.
+          echo "Applying seed data via psql..."
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/seed.sql -v ON_ERROR_STOP=1
 
       - name: Verify Supabase auth is ready
