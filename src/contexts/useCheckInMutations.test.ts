@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
 vi.mock('@/lib/checkin-operations', () => ({
@@ -98,7 +98,7 @@ function makeParams(
   overrides?: Partial<UseCheckInMutationsParams>,
 ): UseCheckInMutationsParams & { dispatch: ReturnType<typeof vi.fn> } {
   const dispatch = vi.fn()
-  return {
+  const params = {
     state: stateWithSession,
     dispatch,
     coupleId: COUPLE_ID,
@@ -106,6 +106,7 @@ function makeParams(
     actionItems: [],
     ...overrides,
   }
+  return params as UseCheckInMutationsParams & { dispatch: ReturnType<typeof vi.fn> }
 }
 
 describe('useCheckInMutations — clearError', () => {
