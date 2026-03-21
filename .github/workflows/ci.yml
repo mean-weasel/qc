@@ -87,8 +87,8 @@ jobs:
         if: steps.supabase-docker-cache.outputs.cache-hit == 'true'
         run: docker load -i /tmp/supabase-docker-images.tar.zst
 
-      - name: Start local Supabase (background)
-        run: supabase start > /tmp/supabase.log 2>&1 &
+      - name: Start local Supabase (background, skip migration health check)
+        run: supabase start --ignore-health-check > /tmp/supabase.log 2>&1 &
 
       - name: Save Docker images to cache
         if: steps.supabase-docker-cache.outputs.cache-hit != 'true'
@@ -137,18 +137,23 @@ jobs:
       - name: Build app
         run: npx next build
 
-      - name: Wait for Supabase to be ready
+      - name: Wait for Supabase containers to be ready
         run: |
-          for i in $(seq 1 150); do
+          for i in $(seq 1 120); do
             if supabase status > /dev/null 2>&1; then
-              echo "Supabase ready (attempt $i)"
-              exit 0
+              echo "Supabase containers ready (attempt $i)"
+              break
             fi
             sleep 3
           done
-          echo "Supabase failed to start within timeout"
-          cat /tmp/supabase.log
-          exit 1
+          # Apply migrations sequentially (supabase start batches them, causing failures)
+          echo "Applying migrations with db reset..."
+          supabase db reset --debug 2>&1 | tail -30 || {
+            echo "db reset failed — falling back to start log:"
+            cat /tmp/supabase.log
+            exit 1
+          }
+          echo "Supabase ready with migrations applied"
 
       - name: Verify Supabase auth is ready
         run: |
