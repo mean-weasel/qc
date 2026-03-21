@@ -13,6 +13,8 @@ export const PUBLIC_ROUTES = [
   '/privacy',
   '/terms',
   '/.well-known',
+  '/forgot-password',
+  '/reset-password',
 ]
 
 export function isPublicRoute(pathname: string): boolean {
