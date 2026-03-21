@@ -1,3 +1,5 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 import { createClient } from '@/lib/supabase/client'
 import type { Milestone, MilestoneCategory, MilestoneRarity } from '@/types'
 
@@ -27,7 +29,34 @@ export async function fetchMilestones(
     .order('achieved_at', { ascending: false, nullsFirst: false })
 
   if (error) throw error
-  return (data ?? []).map(dbRowToMilestone)
+  const milestones = (data ?? []).map(dbRowToMilestone)
+  return resolveSignedUrls(supabase, milestones)
+}
+
+/**
+ * Replace stored photo paths/URLs with short-lived signed URLs for display.
+ * Milestones without a photoUrl are left unchanged.
+ */
+export async function resolveSignedUrls(
+  supabase: ReturnType<typeof createClient>,
+  milestones: Milestone[],
+): Promise<Milestone[]> {
+  const withPhotos = milestones.filter((m) => m.photoUrl !== null)
+  if (withPhotos.length === 0) return milestones
+
+  const signed = await Promise.all(
+    withPhotos.map(async (m) => {
+      const url = await getMilestonePhotoUrl(supabase, m.photoUrl!)
+      return { id: m.id, url }
+    }),
+  )
+
+  const urlMap = new Map(signed.map((s) => [s.id, s.url]))
+  return milestones.map((m) => {
+    if (!m.photoUrl) return m
+    const signedUrl = urlMap.get(m.id)
+    return signedUrl ? { ...m, photoUrl: signedUrl } : m
+  })
 }
 
 const IMAGE_MAGIC_BYTES: Record<string, number[]> = {
@@ -65,10 +94,22 @@ export async function uploadMilestonePhoto(
   const { error } = await supabase.storage.from('milestone-photos').upload(path, file, { upsert: true })
   if (error) throw error
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from('milestone-photos').getPublicUrl(path)
-  return publicUrl
+  // Return the relative storage path (bucket is private; use getMilestonePhotoUrl for signed URLs)
+  return path
+}
+
+export async function getMilestonePhotoUrl(supabase: SupabaseClient, photoPath: string): Promise<string | null> {
+  // Handle legacy full URLs by extracting the path
+  const path = photoPath.includes('/storage/v1/object/public/milestone-photos/')
+    ? photoPath.split('/storage/v1/object/public/milestone-photos/')[1]
+    : photoPath.startsWith('milestone-photos/')
+      ? photoPath.replace('milestone-photos/', '')
+      : photoPath
+
+  const { data, error } = await supabase.storage.from('milestone-photos').createSignedUrl(path, 3600)
+
+  if (error) return null
+  return data.signedUrl
 }
 
 export function buildDbUpdates(updates: Partial<Milestone>): Record<string, unknown> {
