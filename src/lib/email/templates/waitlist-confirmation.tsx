@@ -1,4 +1,4 @@
-import { Html, Head, Body, Container, Text, Link } from '@react-email/components'
+import { Html, Head, Body, Container, Text, Button, Link, Section } from '@react-email/components'
 
 interface WaitlistConfirmationEmailProps {
   name?: string
@@ -26,6 +26,11 @@ export function WaitlistConfirmationEmail({
             In the meantime, know that QC is being built to help couples strengthen their connection through regular
             check-ins, shared notes, and celebrating milestones together.
           </Text>
+          <Section style={buttonSection}>
+            <Button style={button} href="https://qualitycouple.com">
+              Visit QC
+            </Button>
+          </Section>
           <Text style={footerLinks}>
             <Link href="https://tryqc.co/privacy" style={link}>
               Privacy Policy
@@ -73,6 +78,22 @@ const paragraph = {
   lineHeight: '24px',
   color: '#374151',
   marginBottom: '16px',
+}
+
+const buttonSection = {
+  textAlign: 'center' as const,
+  marginBottom: '24px',
+}
+
+const button = {
+  display: 'inline-block',
+  backgroundColor: '#e11d48',
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600' as const,
+  padding: '12px 24px',
+  borderRadius: '6px',
+  textDecoration: 'none',
 }
 
 const footer = {

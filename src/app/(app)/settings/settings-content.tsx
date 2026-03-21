@@ -6,6 +6,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { CategoryManager } from '@/components/settings/CategoryManager'
 import { PromptManager } from '@/components/settings/PromptManager'
 import { DataExportPanel } from '@/components/settings/DataExportPanel'
+import { DeleteAccountPanel } from '@/components/settings/DeleteAccountPanel'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { PersonalizationPanel } from '@/components/settings/PersonalizationPanel'
 import { PrivacySettings } from '@/components/settings/PrivacySettings'
@@ -119,7 +120,12 @@ export function SettingsContent({
         </div>
       )}
 
-      {activeTab === 'data' && <DataExportPanel />}
+      {activeTab === 'data' && (
+        <div className="space-y-6">
+          <DataExportPanel />
+          <DeleteAccountPanel />
+        </div>
+      )}
     </PageContainer>
   )
 }

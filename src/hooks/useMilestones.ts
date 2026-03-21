@@ -11,6 +11,7 @@ import {
   enforceMilestoneCap,
   fetchMilestones,
   uploadMilestonePhoto,
+  getMilestonePhotoUrl,
   buildDbUpdates,
   sendMilestoneEmailAsync,
 } from './milestone-helpers'
@@ -108,12 +109,13 @@ export function useMilestones(coupleId: string | null): UseMilestonesReturn {
           .single()
         if (insertError) throw insertError
 
-        let photoUrl: string | null = null
+        let displayUrl: string | null = null
         if (input.photoFile) {
-          photoUrl = await uploadPhoto(data.id as string, input.photoFile)
-          await supabase.from('milestones').update({ photo_url: photoUrl }).eq('id', data.id)
+          const storedPath = await uploadPhoto(data.id as string, input.photoFile)
+          await supabase.from('milestones').update({ photo_url: storedPath }).eq('id', data.id)
+          displayUrl = await getMilestonePhotoUrl(supabase, storedPath)
         }
-        const milestone = dbRowToMilestone({ ...data, photo_url: photoUrl ?? data.photo_url })
+        const milestone = dbRowToMilestone({ ...data, photo_url: displayUrl ?? data.photo_url })
         setMilestones((prev) => [milestone, ...prev])
 
         // Send milestone email to both partners (non-blocking)

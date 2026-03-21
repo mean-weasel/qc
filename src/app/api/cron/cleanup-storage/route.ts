@@ -13,11 +13,17 @@ function timingSafeCompare(a: string, b: string): boolean {
 }
 
 function extractStoragePath(photoUrl: string): string | null {
-  // photo_url may be a full URL or a relative storage path
-  // Full URL pattern: .../storage/v1/object/public/milestone-photos/<path>
+  // photo_url may be a full URL, a signed URL, or a relative storage path
+  // Legacy full URL: .../storage/v1/object/public/milestone-photos/<path>
   const fullUrlMatch = photoUrl.match(/\/storage\/v1\/object\/public\/milestone-photos\/(.+)$/)
   if (fullUrlMatch) {
     return fullUrlMatch[1]
+  }
+
+  // Signed URL: .../storage/v1/object/sign/milestone-photos/<path>?token=...
+  const signedUrlMatch = photoUrl.match(/\/storage\/v1\/object\/sign\/milestone-photos\/([^?]+)/)
+  if (signedUrlMatch) {
+    return signedUrlMatch[1]
   }
 
   // If it's already a relative path (no protocol), return as-is

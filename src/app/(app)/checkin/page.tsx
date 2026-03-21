@@ -43,7 +43,7 @@ function SessionRulesSection({ settings }: SessionRulesSectionProps): React.Reac
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-gray-900">Your Session Rules</h2>
+        <h2 className="text-lg font-semibold text-foreground">Your Session Rules</h2>
         <Link href="/settings">
           <Button variant="ghost" size="default" className="text-xs sm:text-sm">
             <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
@@ -65,11 +65,11 @@ interface QuickStartSectionProps {
 
 function QuickStartSection({ topicCount, onPrepare, onStart }: QuickStartSectionProps): React.ReactNode {
   return (
-    <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg border border-pink-200 p-6">
+    <div className="bg-gradient-to-r from-primary/5 to-purple-50/50 rounded-lg border border-primary/20 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Quick Check-In (5 minutes)</h2>
-          <p className="text-gray-600 mt-1">Start with our guided quick check-in</p>
+          <h2 className="text-xl font-semibold text-foreground">Quick Check-In (5 minutes)</h2>
+          <p className="text-muted-foreground mt-1">Start with our guided quick check-in</p>
           {topicCount > 0 ? (
             <Badge className="mt-2 bg-pink-100 text-pink-700 border-pink-300">
               <Sparkles className="h-3 w-3 mr-1" />
@@ -90,7 +90,7 @@ function QuickStartSection({ topicCount, onPrepare, onStart }: QuickStartSection
           </Button>
         </div>
       </div>
-      <div className="flex items-center mt-4 text-sm text-gray-500">
+      <div className="flex items-center mt-4 text-sm text-muted-foreground">
         <Clock className="h-4 w-4 mr-1" />
         <span>Typically takes 5-10 minutes</span>
         <Users className="h-4 w-4 ml-4 mr-1" />
@@ -148,8 +148,8 @@ function CheckInLanding(): React.ReactNode {
             <MessageCircle className="h-8 w-8 text-pink-600" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Relationship Check-In</h1>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Relationship Check-In</h1>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
           Take a few minutes to reflect on your relationship and share your thoughts together.
         </p>
       </div>
@@ -159,30 +159,30 @@ function CheckInLanding(): React.ReactNode {
       <QuickStartSection topicCount={topicCount} onPrepare={openPreparationModal} onStart={handleStartQuickCheckIn} />
 
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Or choose a specific topic to explore:</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Or choose a specific topic to explore:</h2>
         {isLoading ? (
-          <div className="text-center text-gray-500 py-8">Loading categories...</div>
+          <div className="text-center text-muted-foreground py-8">Loading categories...</div>
         ) : (
           <StaggerContainer className="grid gap-4 sm:grid-cols-2">
             {categories.map((category) => (
               <StaggerItem key={category.id}>
                 <div
-                  className={`bg-white rounded-lg border-2 p-6 cursor-pointer transition-all ${
+                  className={`bg-card rounded-lg border-2 p-6 cursor-pointer transition-all ${
                     selectedCategory === category.id
-                      ? 'border-pink-500 bg-pink-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-input hover:shadow-sm'
                   }`}
                   onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
                 >
                   <div className="flex items-start space-x-3">
                     <div className="text-2xl">{category.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                      <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
                     </div>
                     <ArrowRight
                       className={`h-5 w-5 transition-colors ${
-                        selectedCategory === category.id ? 'text-pink-500' : 'text-gray-400'
+                        selectedCategory === category.id ? 'text-primary' : 'text-muted-foreground'
                       }`}
                     />
                   </div>
@@ -194,13 +194,13 @@ function CheckInLanding(): React.ReactNode {
 
         {selectedCategory && (
           <MotionBox variant="fade" className="mt-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-card rounded-lg border border-border p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-foreground">
                     Ready to explore {categories.find((c) => c.id === selectedCategory)?.name}?
                   </h3>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-muted-foreground mt-1">
                     We&apos;ll guide you through thoughtful questions and provide space for both of you to share.
                   </p>
                 </div>

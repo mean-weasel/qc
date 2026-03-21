@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+
+import { signupWithPassword } from './signup-actions'
 
 interface SignupFormProps {
   defaultEmail?: string
@@ -31,22 +32,10 @@ export function SignupForm({ defaultEmail = '' }: SignupFormProps): React.ReactN
       }
     }
 
-    const supabase = createClient()
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+    const result = await signupWithPassword({ displayName, email, password })
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${appUrl}/auth/callback`,
-        data: {
-          display_name: displayName,
-        },
-      },
-    })
-
-    if (signUpError) {
-      setError('Unable to create account. Please try again.')
+    if (result.error) {
+      setError(result.error)
       setLoading(false)
       return
     }
@@ -57,16 +46,16 @@ export function SignupForm({ defaultEmail = '' }: SignupFormProps): React.ReactN
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-sm space-y-4 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Check your email</h1>
-          <p className="text-sm text-gray-600">
+      <div className="flex min-h-screen items-center justify-center bg-muted/50 px-4">
+        <div className="w-full max-w-sm space-y-4 text-center" aria-live="polite">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Check your email</h1>
+          <p className="text-sm text-muted-foreground">
             We sent a confirmation link to <span className="font-medium">{email}</span>. Click the link to activate your
             account.
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center min-h-[44px] text-sm font-medium text-blue-600 hover:text-blue-500"
+            className="inline-flex items-center min-h-[44px] text-sm font-medium text-primary hover:text-primary/80"
           >
             Back to sign in
           </Link>
@@ -76,66 +65,81 @@ export function SignupForm({ defaultEmail = '' }: SignupFormProps): React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted/50 px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Create your account</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center min-h-[44px]"
+              className="font-medium text-primary hover:text-primary/80 inline-flex items-center min-h-[44px]"
             >
               Sign in
             </Link>
           </p>
         </div>
 
-        {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div
+            id="signup-error"
+            role="alert"
+            aria-live="polite"
+            className="rounded-md bg-red-50 p-3 text-sm text-red-700"
+          >
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? 'signup-error' : undefined}>
           <div>
-            <label htmlFor="display-name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="display-name" className="block text-sm font-medium text-foreground">
               Display name
             </label>
             <input
               id="display-name"
               type="text"
               required
+              aria-required="true"
+              autoComplete="name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Your name"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground">
               Email
             </label>
             <input
               id="email"
               type="email"
               required
+              aria-required="true"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               Password
             </label>
             <input
               id="password"
               type="password"
               required
+              aria-required="true"
+              autoComplete="new-password"
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-input px-3 py-2.5 text-base min-h-[44px] shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="At least 8 characters"
             />
           </div>
@@ -143,7 +147,8 @@ export function SignupForm({ defaultEmail = '' }: SignupFormProps): React.ReactN
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-base min-h-[44px] font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            aria-busy={loading}
+            className="w-full rounded-md bg-primary px-4 py-2.5 text-base min-h-[44px] font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>

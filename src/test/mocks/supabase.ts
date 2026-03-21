@@ -70,6 +70,8 @@ export function createMockSupabaseClient() {
         data: { user: null, session: null },
         error: null,
       }),
+      resetPasswordForEmail: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      updateUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
       signInWithOAuth: vi.fn().mockResolvedValue({
         data: { url: 'https://example.com/auth' },

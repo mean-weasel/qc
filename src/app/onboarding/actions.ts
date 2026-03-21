@@ -8,8 +8,14 @@ import { createCouple, createInvite } from '@/lib/couples'
 import { sendEmail, shouldSendEmail } from '@/lib/email/send'
 import { InviteEmail } from '@/lib/email/templates/invite'
 import { WelcomeEmail } from '@/lib/email/templates/welcome'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { validate, emailSchema, nameSchema } from '@/lib/validation'
+
+const onboardingLimiter = createRateLimiter({
+  maxRequests: 5,
+  windowSeconds: 3600,
+})
 
 const onboardingSchema = z.object({
   displayName: nameSchema,
@@ -128,6 +134,11 @@ async function createDefaultReminder(
 
 export async function completeOnboarding(_prev: OnboardingState, formData: FormData): Promise<OnboardingState> {
   const { user } = await requireAuth()
+
+  const allowed = await onboardingLimiter.check(`onboarding:${user.id}`)
+  if (!allowed) {
+    return { error: 'Too many attempts. Please try again later.' }
+  }
 
   const raw = {
     displayName: formData.get('displayName'),

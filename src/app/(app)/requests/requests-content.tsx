@@ -7,6 +7,7 @@ import { Inbox, Send } from 'lucide-react'
 
 import { RequestCard } from '@/components/requests/RequestCard'
 import { RequestForm } from '@/components/requests/RequestForm'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button } from '@/components/ui/button'
 import { useRealtimeCouple } from '@/hooks/useRealtimeCouple'
@@ -72,6 +73,43 @@ interface Props {
   partnerName: string
 }
 
+function EmptyRequests({ tab, partnerId }: { tab: 'received' | 'sent'; partnerId: string | null }): React.ReactElement {
+  return (
+    <div className="py-12 text-center">
+      {tab === 'received' ? (
+        <Inbox className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+      ) : (
+        <Send className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+      )}
+      <p className="text-muted-foreground">
+        No {tab} requests yet.{tab === 'sent' && partnerId ? ' Send one to your partner!' : ''}
+      </p>
+    </div>
+  )
+}
+
+function DeleteRequestDialog({
+  deleteTarget,
+  onClose,
+  onConfirm,
+}: {
+  deleteTarget: string | null
+  onClose: () => void
+  onConfirm: () => void
+}): React.ReactElement {
+  return (
+    <ConfirmDeleteDialog
+      open={deleteTarget !== null}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      title="Delete Request"
+      description="Are you sure you want to delete this request? This action cannot be undone."
+      onConfirm={onConfirm}
+    />
+  )
+}
+
 export function RequestsContent({
   initialRequests,
   userId,
@@ -83,6 +121,7 @@ export function RequestsContent({
   const [showForm, setShowForm] = useState(false)
   const [tab, setTab] = useState<'received' | 'sent'>('received')
   const [convertingId, setConvertingId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const [formState, formAction, isPending] = useActionState<RequestActionState, FormData>(async (prev, formData) => {
     const result = await createRequest(prev, formData)
@@ -121,7 +160,10 @@ export function RequestsContent({
     }
   }
 
-  async function handleDelete(id: string): Promise<void> {
+  async function handleConfirmDelete(): Promise<void> {
+    if (!deleteTarget) return
+    const id = deleteTarget
+    setDeleteTarget(null)
     const prev = requests
     setRequests((r) => r.filter((req) => req.id !== id))
     const result = await deleteRequest(id)
@@ -192,16 +234,7 @@ export function RequestsContent({
       </div>
 
       {displayed.length === 0 ? (
-        <div className="py-12 text-center">
-          {tab === 'received' ? (
-            <Inbox className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
-          ) : (
-            <Send className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
-          )}
-          <p className="text-muted-foreground">
-            No {tab} requests yet.{tab === 'sent' && partnerId ? ' Send one to your partner!' : ''}
-          </p>
-        </div>
+        <EmptyRequests tab={tab} partnerId={partnerId} />
       ) : (
         <div className="space-y-3">
           {displayed.map((request) => (
@@ -210,13 +243,19 @@ export function RequestsContent({
               request={request}
               isReceiver={request.requested_for === userId}
               onRespond={handleRespond}
-              onDelete={handleDelete}
+              onDelete={async (id) => setDeleteTarget(id)}
               onConvertToReminder={handleConvertToReminder}
               isConverting={convertingId === request.id}
             />
           ))}
         </div>
       )}
+
+      <DeleteRequestDialog
+        deleteTarget={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void handleConfirmDelete()}
+      />
     </PageContainer>
   )
 }

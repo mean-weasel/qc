@@ -18,6 +18,9 @@ vi.mock('@/components/settings/PromptManager', () => ({
 vi.mock('@/components/settings/DataExportPanel', () => ({
   DataExportPanel: () => <div data-testid="data-export" />,
 }))
+vi.mock('@/components/settings/DeleteAccountPanel', () => ({
+  DeleteAccountPanel: () => <div data-testid="delete-account" />,
+}))
 vi.mock('@/components/settings/NotificationSettings', () => ({
   NotificationSettings: () => <div data-testid="notifications" />,
 }))

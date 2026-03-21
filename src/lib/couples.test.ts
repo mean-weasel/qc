@@ -20,16 +20,10 @@ const mockPartnerProfile = {
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
 }
-
 let mockSupabase: ReturnType<typeof createMockSupabaseClient>
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(),
-}))
-
-vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: vi.fn(),
-}))
+vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn() }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
 
 async function getServerMock() {
   const mod = await import('@/lib/supabase/server')
@@ -52,9 +46,7 @@ function setupUnauthenticatedUser() {
 
 beforeEach(async () => {
   vi.clearAllMocks()
-
   mockSupabase = createMockSupabaseClient()
-
   const createClientMock = await getServerMock()
   createClientMock.mockResolvedValue(mockSupabase)
 })
@@ -234,5 +226,75 @@ describe('getPartner', () => {
     const result = await getPartner()
 
     expect(result).toEqual({ data: null, error: 'Partner not found' })
+  })
+})
+
+describe('joinCouple', () => {
+  it('updates profile couple_id to the given couple', async () => {
+    const { joinCouple } = await import('@/lib/couples')
+    setupAuthenticatedUser()
+
+    mockSupabase._queryBuilder.eq.mockResolvedValueOnce({ error: null })
+
+    const result = await joinCouple('couple-1')
+
+    expect(mockSupabase.from).toHaveBeenCalledWith('profiles')
+    expect(mockSupabase._queryBuilder.update).toHaveBeenCalledWith({ couple_id: 'couple-1' })
+    expect(result).toEqual({ error: null })
+  })
+
+  it('returns error when not authenticated', async () => {
+    const { joinCouple } = await import('@/lib/couples')
+    setupUnauthenticatedUser()
+
+    const result = await joinCouple('couple-1')
+
+    expect(result).toEqual({ error: 'Not authenticated' })
+  })
+
+  it('returns error when profile update fails', async () => {
+    const { joinCouple } = await import('@/lib/couples')
+    setupAuthenticatedUser()
+
+    mockSupabase._queryBuilder.eq.mockResolvedValueOnce({ error: { message: 'Update failed' } })
+
+    const result = await joinCouple('couple-1')
+
+    expect(result).toEqual({ error: 'Update failed' })
+  })
+})
+
+describe('leaveCouple', () => {
+  it('clears couple_id on the user profile', async () => {
+    const { leaveCouple } = await import('@/lib/couples')
+    setupAuthenticatedUser()
+
+    mockSupabase._queryBuilder.eq.mockResolvedValueOnce({ error: null })
+
+    const result = await leaveCouple()
+
+    expect(mockSupabase.from).toHaveBeenCalledWith('profiles')
+    expect(mockSupabase._queryBuilder.update).toHaveBeenCalledWith({ couple_id: null })
+    expect(result).toEqual({ error: null })
+  })
+
+  it('returns error when not authenticated', async () => {
+    const { leaveCouple } = await import('@/lib/couples')
+    setupUnauthenticatedUser()
+
+    const result = await leaveCouple()
+
+    expect(result).toEqual({ error: 'Not authenticated' })
+  })
+
+  it('returns error when profile update fails', async () => {
+    const { leaveCouple } = await import('@/lib/couples')
+    setupAuthenticatedUser()
+
+    mockSupabase._queryBuilder.eq.mockResolvedValueOnce({ error: { message: 'DB error' } })
+
+    const result = await leaveCouple()
+
+    expect(result).toEqual({ error: 'DB error' })
   })
 })
