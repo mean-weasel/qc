@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { DiscoveryCard } from '@/components/love-languages/DiscoveryCard'
-import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog' // eslint-disable-line
 import { Plus, Heart, Sparkles, Info, Lightbulb } from 'lucide-react'
 import type { LoveLanguage, LoveLanguageDiscovery } from '@/types'
 
@@ -123,6 +123,29 @@ function PartnerLanguagesTab({ partnerLanguages }: PartnerLanguagesTabProps): Re
   )
 }
 
+function DeleteLanguageDialog(props: {
+  deleteTarget: string | null
+  onClose: () => void
+  onDelete: (id: string) => Promise<void>
+}): React.ReactNode {
+  return (
+    <ConfirmDeleteDialog
+      open={props.deleteTarget !== null}
+      onOpenChange={(open) => {
+        if (!open) props.onClose()
+      }}
+      title="Delete Love Language"
+      description="Are you sure you want to delete this love language? This action cannot be undone."
+      onConfirm={() => {
+        if (props.deleteTarget) {
+          void props.onDelete(props.deleteTarget)
+          props.onClose()
+        }
+      }}
+    />
+  )
+}
+
 export default function LoveLanguagesPage(): React.ReactNode {
   const {
     languages,
@@ -142,17 +165,6 @@ export default function LoveLanguagesPage(): React.ReactNode {
   function handleEdit(language: LoveLanguage): void {
     setEditingLanguage(language)
     setShowAddDialog(true)
-  }
-
-  function handleDelete(id: string): void {
-    setDeleteTarget(id)
-  }
-
-  function handleConfirmDelete(): void {
-    if (deleteTarget) {
-      void deleteLanguage(deleteTarget)
-      setDeleteTarget(null)
-    }
   }
 
   function handleSubmit(data: {
@@ -244,7 +256,7 @@ export default function LoveLanguagesPage(): React.ReactNode {
                 languages={sharedLanguages}
                 badgeVariant="secondary"
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={setDeleteTarget}
                 onTogglePrivacy={handleTogglePrivacy}
               />
               <LanguageGroup
@@ -252,7 +264,7 @@ export default function LoveLanguagesPage(): React.ReactNode {
                 languages={privateLanguages}
                 badgeVariant="outline"
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={setDeleteTarget}
                 onTogglePrivacy={handleTogglePrivacy}
               />
             </>
@@ -275,14 +287,10 @@ export default function LoveLanguagesPage(): React.ReactNode {
         initialLanguage={editingLanguage ?? undefined}
       />
 
-      <ConfirmDeleteDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
-        }}
-        title="Delete Love Language"
-        description="Are you sure you want to delete this love language? This action cannot be undone."
-        onConfirm={handleConfirmDelete}
+      <DeleteLanguageDialog
+        deleteTarget={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onDelete={deleteLanguage}
       />
     </PageContainer>
   )

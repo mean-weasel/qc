@@ -8,6 +8,38 @@ import { loginWithPassword } from './actions'
 import { sanitizeRedirect } from '@/lib/redirect'
 import { createClient } from '@/lib/supabase/client'
 
+function OAuthButtons({ onOAuth }: { onOAuth: (provider: 'google' | 'github') => void }): React.ReactElement {
+  return (
+    <>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-input" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-muted/50 px-2 text-muted-foreground">Or continue with</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => onOAuth('google')}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-input bg-card px-4 py-2.5 text-base min-h-[44px] font-medium text-foreground hover:bg-muted/50"
+        >
+          Google
+        </button>
+        <button
+          type="button"
+          onClick={() => onOAuth('github')}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-input bg-card px-4 py-2.5 text-base min-h-[44px] font-medium text-foreground hover:bg-muted/50"
+        >
+          GitHub
+        </button>
+      </div>
+    </>
+  )
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -45,11 +77,11 @@ function LoginForm() {
     router.refresh()
   }
 
-  async function handleOAuth(provider: 'google' | 'github') {
+  function handleOAuth(provider: 'google' | 'github'): void {
     const supabase = createClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
 
-    await supabase.auth.signInWithOAuth({
+    void supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${appUrl}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
@@ -135,31 +167,7 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-input" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-muted/50 px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => handleOAuth('google')}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-input bg-card px-4 py-2.5 text-base min-h-[44px] font-medium text-foreground hover:bg-muted/50"
-          >
-            Google
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOAuth('github')}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-input bg-card px-4 py-2.5 text-base min-h-[44px] font-medium text-foreground hover:bg-muted/50"
-          >
-            GitHub
-          </button>
-        </div>
+        <OAuthButtons onOAuth={handleOAuth} />
       </div>
     </div>
   )

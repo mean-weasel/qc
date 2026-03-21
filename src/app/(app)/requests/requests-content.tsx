@@ -73,6 +73,43 @@ interface Props {
   partnerName: string
 }
 
+function EmptyRequests({ tab, partnerId }: { tab: 'received' | 'sent'; partnerId: string | null }): React.ReactElement {
+  return (
+    <div className="py-12 text-center">
+      {tab === 'received' ? (
+        <Inbox className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+      ) : (
+        <Send className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+      )}
+      <p className="text-muted-foreground">
+        No {tab} requests yet.{tab === 'sent' && partnerId ? ' Send one to your partner!' : ''}
+      </p>
+    </div>
+  )
+}
+
+function DeleteRequestDialog({
+  deleteTarget,
+  onClose,
+  onConfirm,
+}: {
+  deleteTarget: string | null
+  onClose: () => void
+  onConfirm: () => void
+}): React.ReactElement {
+  return (
+    <ConfirmDeleteDialog
+      open={deleteTarget !== null}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      title="Delete Request"
+      description="Are you sure you want to delete this request? This action cannot be undone."
+      onConfirm={onConfirm}
+    />
+  )
+}
+
 export function RequestsContent({
   initialRequests,
   userId,
@@ -121,10 +158,6 @@ export function RequestsContent({
     } else {
       toast.success('Response sent')
     }
-  }
-
-  async function handleDeleteClick(id: string): Promise<void> {
-    setDeleteTarget(id)
   }
 
   async function handleConfirmDelete(): Promise<void> {
@@ -201,16 +234,7 @@ export function RequestsContent({
       </div>
 
       {displayed.length === 0 ? (
-        <div className="py-12 text-center">
-          {tab === 'received' ? (
-            <Inbox className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
-          ) : (
-            <Send className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
-          )}
-          <p className="text-muted-foreground">
-            No {tab} requests yet.{tab === 'sent' && partnerId ? ' Send one to your partner!' : ''}
-          </p>
-        </div>
+        <EmptyRequests tab={tab} partnerId={partnerId} />
       ) : (
         <div className="space-y-3">
           {displayed.map((request) => (
@@ -219,7 +243,7 @@ export function RequestsContent({
               request={request}
               isReceiver={request.requested_for === userId}
               onRespond={handleRespond}
-              onDelete={handleDeleteClick}
+              onDelete={setDeleteTarget}
               onConvertToReminder={handleConvertToReminder}
               isConverting={convertingId === request.id}
             />
@@ -227,13 +251,9 @@ export function RequestsContent({
         </div>
       )}
 
-      <ConfirmDeleteDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
-        }}
-        title="Delete Request"
-        description="Are you sure you want to delete this request? This action cannot be undone."
+      <DeleteRequestDialog
+        deleteTarget={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={() => void handleConfirmDelete()}
       />
     </PageContainer>

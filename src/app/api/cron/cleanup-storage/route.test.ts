@@ -58,10 +58,6 @@ beforeEach(() => {
   vi.stubEnv('CRON_SECRET', 'test-secret')
 })
 
-// ---------------------------------------------------------------------------
-// Auth tests
-// ---------------------------------------------------------------------------
-
 describe('GET /api/cron/cleanup-storage - auth', () => {
   it('returns 401 when no auth header', async () => {
     const res = await GET(makeRequest())
@@ -85,10 +81,6 @@ describe('GET /api/cron/cleanup-storage - auth', () => {
     expect(body.error).toBe('Unauthorized')
   })
 })
-
-// ---------------------------------------------------------------------------
-// Empty / fully-referenced storage
-// ---------------------------------------------------------------------------
 
 describe('GET /api/cron/cleanup-storage - empty storage', () => {
   it('returns 200 with zero counts when bucket is empty', async () => {
@@ -137,10 +129,6 @@ describe('GET /api/cron/cleanup-storage - all objects referenced', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// Orphan detection and deletion
-// ---------------------------------------------------------------------------
-
 describe('GET /api/cron/cleanup-storage - orphan deletion', () => {
   it('identifies and deletes orphaned objects older than the grace period', async () => {
     const orphan = makeStorageObject('photos/orphan.jpg', TWO_DAYS_MS)
@@ -179,10 +167,6 @@ describe('GET /api/cron/cleanup-storage - orphan deletion', () => {
     expect(mockStorageRemove).toHaveBeenCalledWith(expect.arrayContaining(['photos/orphan1.jpg', 'photos/orphan2.jpg']))
   })
 })
-
-// ---------------------------------------------------------------------------
-// Grace period
-// ---------------------------------------------------------------------------
 
 describe('GET /api/cron/cleanup-storage - grace period', () => {
   it('skips objects created within the 24-hour grace period', async () => {
@@ -226,10 +210,6 @@ describe('GET /api/cron/cleanup-storage - grace period', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// Error handling
-// ---------------------------------------------------------------------------
-
 describe('GET /api/cron/cleanup-storage - error handling', () => {
   it('returns 500 when storage list fails', async () => {
     mockStorageList.mockResolvedValue({ data: null, error: { message: 'bucket not found' } })
@@ -265,10 +245,6 @@ describe('GET /api/cron/cleanup-storage - error handling', () => {
     expect(body.errors).toContain('delete failed')
   })
 })
-
-// ---------------------------------------------------------------------------
-// Response shape
-// ---------------------------------------------------------------------------
 
 describe('GET /api/cron/cleanup-storage - response shape', () => {
   it('returns correct counts in response JSON', async () => {

@@ -14,6 +14,35 @@ import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
 import { Plus, Calendar, CheckCircle2, Sparkles, Info } from 'lucide-react'
 import type { LoveAction, LoveActionStatus, LoveActionFrequency, LoveActionDifficulty } from '@/types'
 
+function DeleteActionDialog({
+  deleteTarget,
+  onClose,
+  onDelete,
+}: {
+  deleteTarget: string | null
+  onClose: () => void
+  onDelete: (id: string) => Promise<void>
+}): React.ReactNode {
+  function handleConfirm(): void {
+    if (deleteTarget) {
+      void onDelete(deleteTarget)
+      onClose()
+    }
+  }
+
+  return (
+    <ConfirmDeleteDialog
+      open={deleteTarget !== null}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      title="Delete Love Action"
+      description="Are you sure you want to delete this love action? This action cannot be undone."
+      onConfirm={handleConfirm}
+    />
+  )
+}
+
 function LoveActionsContent(): React.ReactNode {
   const searchParams = useSearchParams()
   const rawLanguageId = searchParams.get('languageId')
@@ -40,17 +69,6 @@ function LoveActionsContent(): React.ReactNode {
   function handleEdit(action: LoveAction): void {
     setEditingAction(action)
     setShowAddDialog(true)
-  }
-
-  function handleDelete(id: string): void {
-    setDeleteTarget(id)
-  }
-
-  function handleConfirmDelete(): void {
-    if (deleteTarget) {
-      void deleteAction(deleteTarget)
-      setDeleteTarget(null)
-    }
   }
 
   function handleDialogClose(open: boolean): void {
@@ -126,7 +144,7 @@ function LoveActionsContent(): React.ReactNode {
               getLinkedTitle={getLinkedTitle}
               onComplete={completeAction}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={setDeleteTarget}
               emptyTitle="No Pending Actions"
               emptyDesc="Add actions to show love in ways that matter to your partner."
               onAdd={() => setShowAddDialog(true)}
@@ -139,7 +157,7 @@ function LoveActionsContent(): React.ReactNode {
               getLinkedTitle={getLinkedTitle}
               onComplete={completeAction}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={setDeleteTarget}
               emptyTitle="No Recurring Actions"
               emptyDesc="Set up recurring actions for consistent expressions of love."
             />
@@ -150,7 +168,7 @@ function LoveActionsContent(): React.ReactNode {
               actions={completedActions}
               getLinkedTitle={getLinkedTitle}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={setDeleteTarget}
               emptyTitle="No Completed Actions Yet"
               emptyDesc="Complete your first action to start building your history."
             />
@@ -168,15 +186,7 @@ function LoveActionsContent(): React.ReactNode {
         preselectedLanguageId={preselectedLanguageId}
       />
 
-      <ConfirmDeleteDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
-        }}
-        title="Delete Love Action"
-        description="Are you sure you want to delete this love action? This action cannot be undone."
-        onConfirm={handleConfirmDelete}
-      />
+      <DeleteActionDialog deleteTarget={deleteTarget} onClose={() => setDeleteTarget(null)} onDelete={deleteAction} />
     </div>
   )
 }
